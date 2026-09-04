@@ -1,0 +1,26 @@
+{
+  "$schema": "./schemas/app-config.schema.json",
+  "name": "Arrow Viewer",
+  "nameJa": "Arrow Viewer",
+  "slug": "arrow-viewer",
+  "version": "1.0.0",
+  "description": "Open Apache Arrow IPC files and streams locally and inspect schema, record batches, dictionaries, and data.",
+  "descriptionJa": "Apache Arrow IPC File / Streamをブラウザー内で開き、スキーマ・レコードバッチ・辞書・データを確認します。",
+  "defaultLanguage": "auto",
+  "repository": {
+    "owner": "ttomohisa",
+    "name": "htmlapps-arrow-viewer"
+  },
+  "build": {
+    "output": "dist/index.html",
+    "blockRuntimeNetwork": true,
+    "selfExtract": {
+      "enabled": true,
+      "output": "dist/index.self-extract.html"
+    },
+    "sizeBudget": {
+      "readableWarningMb": 10,
+      "selfExtractWarningMb": 6
+    }
+  }
+}
