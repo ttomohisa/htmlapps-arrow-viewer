@@ -16,6 +16,10 @@ Open Apache Arrow IPC File / Stream inputs locally and inspect their schema, met
 - Preview rows with 50 / 100 / 250 / 500 / 1,000 rows per page.
 - Read only record batches needed for the current page and keep a small recent-batch cache.
 - Table / Record views, visible-column selection, current-page sorting, and Cell Inspector.
+- Sortable column headers are native keyboard-operable buttons. Activate repeatedly to cycle ascending, descending, and source order; expose the active direction with `aria-sort`.
+- Show a localized current-page sort summary and Clear sort in both Table and Record views, including when the sorted column is hidden. Clearing sort restores source order without reading another batch.
+- Compare complete binary/nested values rather than abbreviated previews. Prepare each comparison key once per sort, preserve exact primitive Number/BigInt comparisons, keep nulls last in both directions, and keep ties in source order.
+- Sorting is page-local and per file. Page/page-size changes clear it; switching views, hiding columns, changing language, and returning to a loaded tab preserve it. Stale header callbacks cannot sort a newer page or another file.
 - Decode common primitive values, timestamps, List / Struct nested values, and dictionary-encoded fields used by the included fixtures.
 - Copy or save only the successfully loaded current page as CSV. Disable and guard both actions while the selected page is unread, loading, or failed; a successful empty page may export headers.
 - A newer page/page-size read owns rows, loading, errors, and export readiness. Discard older completions and prevent closed files from committing inspection, page, dictionary, or batch-cache results.

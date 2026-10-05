@@ -24,6 +24,7 @@ GitHub Pages delivers the initial HTML. After it loads, selected files are read 
 - **Read only batches needed for the current page** — Avoid expanding the entire file into a table at once.
 - **Handle common Arrow values** — Decode primitive values, timestamps, List / Struct nested values, and dictionary-encoded fields covered by the viewer.
 - **Inspect and export current-page data** — Use Table / Record views, column visibility, sorting, Cell Inspector, and CSV copy/save.
+- **Control current-page sorting** — Use keyboard-accessible column headers to cycle ascending, descending, and source order. See the current sort and clear it from Table or Record view, even with the sorted column hidden.
 - **Keep each file isolated** — Open multiple files without letting one file’s error or schema leak into another tab.
 
 ## Quick start
@@ -54,7 +55,7 @@ Python, Node.js, and a local web server are not required. The builder uses Windo
 2. Review detected format, row count, record batches, dictionaries, and metadata.
 3. Inspect schema as Tree or Raw JSON.
 4. Browse records with paging controls. Only record batches needed for the current page are read.
-5. Switch between Table and Record views and inspect full nested values in Cell Inspector.
+5. Switch between Table and Record views and inspect full nested values in Cell Inspector. Activate a Table column header to cycle its sort; use Clear sort in either view to restore source order. Page or page-size changes reset sorting.
 6. Wait for the current page to finish loading, then copy or save CSV. Export is unavailable during reads and after a read failure. A successfully loaded empty page exports headers.
 
 ## Publish with GitHub Pages
@@ -116,6 +117,7 @@ The repository check requires Node.js 22+ and runs the page/output regression su
 - Feather is not advertised as a supported input format.
 - IPC body buffers compressed with LZ4 / ZSTD are reported as unsupported in v1.0.0.
 - CSV export covers the successfully loaded current page, preserving visible columns and sorting. It does not cover the whole file.
+- Sorting compares complete values, including binary bytes beyond the compact preview. Nulls stay last in either direction, and equal values keep their source order. Sorting reads no additional batches.
 - CSV, Cell Inspector/copy, and expanded records include all binary bytes as space-separated hexadecimal, including nested values. Table previews and record summaries remain abbreviated.
 - Schema copy becomes available once the file header is parsed, independently of row-read success.
 - This is a viewer rather than a SQL/query engine.
