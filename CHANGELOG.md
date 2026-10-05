@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add localized current-page sort status and Clear sort in Table and Record views, including hidden sorted columns.
+- Make sortable headers native buttons with next-action labels, active `aria-sort`, and focus restoration after sorting.
+- Fix long binary and nested-value sorting by preparing full comparison keys once per sort instead of sorting abbreviated previews; retain exact primitive comparisons, null-last ordering, stable ties, and source rows.
+- Guard retained header callbacks against inactive files, loading/failed pages, and replaced page results.
+
 - Keep page reads and file closure generation-owned so stale results cannot overwrite current rows, errors, loading, or export readiness.
 - Disable and guard CSV until the selected page loads successfully; allow successful empty-page headers and guard schema copy before inspection completes.
 - Preserve complete binary and nested values in CSV, Cell Inspector/copy, and expanded records while retaining compact previews.

@@ -18,9 +18,11 @@ function harness() {
   let clipboardDeferred = false;
   function element(tag = 'div') {
     const classes = new Set();
-    return { tag, value: '', disabled: false, hidden: false, textContent: '', innerHTML: '', style: {}, dataset: {}, children: [], listeners: {},
+    return { tag, value: '', disabled: false, hidden: false, textContent: '', innerHTML: '', style: {}, dataset: {}, children: [], listeners: {}, attributes: {},
       classList: { add(c) { classes.add(c); }, remove(c) { classes.delete(c); }, toggle(c, flag) { if (flag ?? !classes.has(c)) classes.add(c); else classes.delete(c); }, contains(c) { return classes.has(c); } },
-      addEventListener(type, fn) { this.listeners[type] = fn; }, setAttribute() {},
+      addEventListener(type, fn) { this.listeners[type] = fn; }, setAttribute(name, value) { this.attributes[name] = String(value); },
+      focus() { document.activeElement = this; },
+      querySelector(selector) { const index = selector.match(/^\[data-sort-index="(\d+)"\]$/)?.[1]; return this.children.find(child => child.dataset?.sortIndex === index) || this.children.map(child => child.querySelector?.(selector)).find(Boolean) || null; },
       append(...children) { this.children.push(...children); }, replaceChildren(...children) { this.children = children; },
       click() { if (this.tag === 'a') downloads.push({ name: this.download, url: this.href }); },
       showModal() { this.open = true; }, close() { this.open = false; },
@@ -32,7 +34,7 @@ function harness() {
   vm.createContext(context);
   const begin = html.indexOf('      const $=s=>'), end = html.indexOf('    })();', begin);
   assert.ok(begin > 0 && end > begin, 'application closure exists');
-  vm.runInContext(html.slice(begin, end) + '\n globalThis.api={state,buildFileState,readPage,buildCurrentCsv,copyCsv,downloadCsv,prettyValue,cellText,decodeBatchColumns,renderData,renderActive,rootFields,closeFile,activateFile,inspectFile,openCell,setHeaderDetector(fn){detectContainer=fn;}};', context);
+  vm.runInContext(html.slice(begin, end) + '\n globalThis.api={state,sortedRows,buildFileState,readPage,buildCurrentCsv,copyCsv,downloadCsv,prettyValue,cellText,decodeBatchColumns,renderData,renderActive,rootFields,closeFile,activateFile,inspectFile,openCell,setHeaderDetector(fn){detectContainer=fn;}};', context);
   const api = context.api;
   const get = s => document.querySelector(s);
   function mount(fileState) { api.state.files.push(fileState); api.state.activeId = fileState.id; api.renderActive(); return fileState; }
@@ -47,7 +49,7 @@ function harness() {
   }
   async function start(f, page) { f.state.page = page; const promise = api.readPage(f.state); await tick(); return { promise, read: f.reads.at(-1) }; }
   const click = s => get(s).listeners.click();
-  return { api, get, writes, downloads, pendingClipboard, deferClipboard() { clipboardDeferred = true; }, fixture, mount, start, click };
+  return { api, get, document, writes, downloads, pendingClipboard, deferClipboard() { clipboardDeferred = true; }, fixture, mount, start, click };
 }
 function deferred() { let resolve, reject; const promise = new Promise((r, j) => { resolve = r; reject = j; }); return { promise, resolve, reject }; }
 function intBody(n) { const b = new ArrayBuffer(4); new DataView(b).setInt32(0, n, true); return b; }
@@ -182,4 +184,203 @@ test('closing during header inspection prevents a late header success from start
   const h = harness(), f = h.fixture(), header = f.state.header, wait = deferred(); header.totalRows = 2; h.api.setHeaderDetector(() => wait.promise);
   const initial = h.api.inspectFile(f.state); h.api.closeFile(f.state.id); wait.resolve(header); await initial;
   assert.equal(f.state.header, null); assert.equal(f.reads.length, 0); assert.equal(f.state.rows.length, 0); assertDisabled(h, true);
+});
+
+function loadedValues(h, values, name = 'sort.arrow') {
+  const f = h.fixture(name);
+  f.state.rows = values.map((value, i) => ({ recordNumber: i + 1, value: { value } }));
+  f.state.pageResult = { page: 1, pageSize: 1, generation: f.state.readGeneration };
+  h.api.renderData(f.state);
+  return f;
+}
+function tableHeaders(h) { return h.get('#dataTableWrap').children[0].children[0].children[0].children; }
+function headerButton(h, index = 1) { return tableHeaders(h)[index].children[0]; }
+function tableOrder(h) { return h.get('#dataTableWrap').children[0].children[1].children.map(row => Number(row.children[0].textContent)); }
+function csvOrder(h, fs) { return h.api.buildCurrentCsv(fs).split('\r\n').slice(1).map(line => Number(line.split(',')[0])); }
+function longBytes(last, length = 120) { const bytes = new Uint8Array(length); bytes[length - 1] = last; return bytes; }
+
+for (const [label, wrap] of [
+  ['binary', bytes => bytes],
+  ['nested struct', bytes => ({ payload: bytes })],
+  ['nested list/map', bytes => [{ payload: new Map([['bytes', bytes], ['large', 9007199254740993n]]) }]]
+]) {
+  for (const dir of [1, -1]) test(`${label} sorting uses complete values past compact preview limits (${dir})`, () => {
+    const h = harness(), f = loadedValues(h, [wrap(longBytes(2)), wrap(longBytes(1)), wrap(longBytes(2)), null]);
+    assert.equal(h.api.cellText(f.state.rows[0].value.value), h.api.cellText(f.state.rows[1].value.value));
+    const source = f.state.rows.slice();
+    f.state.sort = { field: f.state.fields[0], dir }; h.api.renderData(f.state);
+    const expected = dir === 1 ? [2, 1, 3, 4] : [1, 3, 2, 4];
+    assert.deepEqual(tableOrder(h), expected);
+    assert.deepEqual(csvOrder(h, f.state), expected);
+    h.click('#recordModeButton');
+    assert.deepEqual(h.get('#recordList').children.map(card => Number(card.children[0].children[0].textContent.match(/\d+$/)[0])), expected);
+    assert.deepEqual(f.state.rows, source, 'sorting never mutates the loaded source order');
+    assert.equal(f.reads.length, 0, 'sorting never reads another batch');
+  });
+}
+test('sorting prepares each complete comparison key once per sort', () => {
+  const h = harness(); let serializations = 0, accesses = 0;
+  const f = loadedValues(h, []);
+  f.state.rows = Array.from({ length: 100 }, (_, i) => ({ recordNumber: i + 1, value: { get value() { accesses++; return { toJSON() { serializations++; return { payload: longBytes((i * 37) % 100) }; } }; } } }));
+  f.state.sort = { field: f.state.fields[0], dir: 1 };
+  const sorted = h.api.sortedRows(f.state);
+  assert.equal(serializations, 100, 'serialization is outside the comparison callback');
+  assert.equal(accesses, 100, 'each row field is read once');
+  assert.equal(sorted[0].recordNumber, 1);
+  assert.equal(f.reads.length, 0);
+});
+test('primitive sorting keeps numeric precision, null-last, stable ties, and source rows', () => {
+  const h = harness();
+  for (const [values, asc, desc] of [
+    [[9007199254740993n, 9007199254740991, 9007199254740992n, null, undefined, 9007199254740993n], [2, 3, 1, 6, 4, 5], [1, 6, 3, 2, 4, 5]],
+    [[10, -2, 0, 1.5, null], [2, 3, 4, 1, 5], [1, 4, 3, 2, 5]],
+    [['b', 'a', 'b', null], [2, 1, 3, 4], [1, 3, 2, 4]],
+    [[true, false, false, null], [2, 3, 1, 4], [1, 2, 3, 4]],
+    [[new Date('2026-02-01Z'), new Date('2026-01-01Z'), null], [2, 1, 3], [1, 2, 3]]
+  ]) {
+    const f = loadedValues(h, values), original = f.state.rows.slice();
+    for (const [dir, expected] of [[1, asc], [-1, desc]]) {
+      f.state.sort = { field: f.state.fields[0], dir };
+      assert.deepEqual(Array.from(h.api.sortedRows(f.state), row => row.recordNumber), expected);
+      assert.deepEqual(f.state.rows, original);
+    }
+  }
+});
+test('native sortable headers expose direction, cycle three states, and restore keyboard focus', () => {
+  const h = harness(), f = loadedValues(h, [2, 1, 2, null]);
+  const header = tableHeaders(h)[1], button = headerButton(h);
+  assert.equal(button?.tag, 'button'); assert.equal(button.type, 'button');
+  assert.equal(header.attributes.scope, 'col');
+  assert.equal(button.textContent, 'value');
+  assert.match(button.attributes['aria-label'], /value.*ascending/i);
+  assert.equal(button.listeners.keydown, undefined, 'native Enter/Space activation needs no duplicate handler');
+  button.focus(); button.listeners.click();
+  assert.deepEqual(tableOrder(h), [2, 1, 3, 4]); assert.equal(tableHeaders(h)[1].attributes['aria-sort'], 'ascending');
+  assert.equal(h.get('#sortSummary').textContent, 'Current page: value · ascending');
+  assert.equal(h.get('#clearSortButton').disabled, false);
+  assert.equal(h.document.activeElement, headerButton(h));
+  headerButton(h).listeners.click();
+  assert.deepEqual(tableOrder(h), [1, 3, 2, 4]); assert.equal(tableHeaders(h)[1].attributes['aria-sort'], 'descending');
+  assert.match(headerButton(h).attributes['aria-label'], /clear.*value/i);
+  headerButton(h).listeners.click();
+  assert.deepEqual(tableOrder(h), [1, 2, 3, 4]); assert.equal(f.state.sort, null);
+  assert.equal(tableHeaders(h)[1].attributes['aria-sort'], undefined);
+  assert.equal(h.get('#sortSummary').textContent, 'Current page: source order');
+  assert.equal(h.get('#clearSortButton').disabled, true);
+  assert.equal(f.reads.length, 0);
+});
+test('clear-sort remains available in Record view and with a hidden sorted field', () => {
+  const h = harness(), f = loadedValues(h, [2, 1]);
+  headerButton(h).listeners.click(); f.state.hiddenFields.add(0); h.api.renderData(f.state);
+  assert.equal(tableHeaders(h).length, 1);
+  assert.equal(h.get('#sortSummary').textContent, 'Current page: value · ascending (hidden column)');
+  assert.equal(h.get('#clearSortButton').disabled, false);
+  h.click('#recordModeButton');
+  assert.equal(h.get('#clearSortButton').disabled, false);
+  assert.deepEqual(csvOrder(h, f.state), [2, 1]);
+  h.click('#clearSortButton');
+  assert.equal(f.state.sort, null); assert.deepEqual(csvOrder(h, f.state), [1, 2]);
+  assert.equal(h.get('#sortSummary').textContent, 'Current page: source order');
+  assert.equal(f.reads.length, 0);
+});
+test('sort controls and next-action labels update between English and Japanese without changing sort', () => {
+  const h = harness(), f = loadedValues(h, [2, 1]); headerButton(h).listeners.click();
+  h.click('#languageButton');
+  assert.equal(h.get('#sortSummary').textContent, '現在ページ: value · 昇順');
+  assert.equal(h.get('#clearSortButton').textContent, '並べ替えを解除');
+  assert.match(headerButton(h).attributes['aria-label'], /value.*降順/);
+  assert.deepEqual(tableOrder(h), [2, 1]);
+  f.state.hiddenFields.add(0); h.api.renderData(f.state);
+  assert.match(h.get('#sortSummary').textContent, /非表示の列/);
+  h.click('#clearSortButton'); assert.equal(h.get('#sortSummary').textContent, '現在ページ: 元の順序');
+  h.click('#languageButton'); assert.equal(h.get('#clearSortButton').textContent, 'Clear sort');
+  assert.equal(f.reads.length, 0);
+});
+test('sort status is per file and stale header callbacks cannot mutate another active tab', () => {
+  const h = harness(), a = loadedValues(h, [2, 1], 'a.arrow');
+  const oldButton = headerButton(h); oldButton.listeners.click();
+  const b = loadedValues(h, [4, 3], 'b.arrow');
+  assert.equal(h.get('#sortSummary').textContent, 'Current page: source order');
+  oldButton.listeners.click(); assert.equal(a.state.sort.dir, 1); assert.equal(b.state.sort, null);
+  h.api.activateFile(a.state.id); assert.equal(h.get('#sortSummary').textContent, 'Current page: value · ascending');
+  h.api.closeFile(a.state.id); oldButton.listeners.click();
+  assert.equal(h.get('#sortSummary').textContent, 'Current page: source order');
+  h.api.closeFile(b.state.id); assert.equal(h.get('#clearSortButton').disabled, true);
+  h.click('#clearSortButton'); assert.equal(h.api.state.files.length, 0);
+});
+test('sort controls are safe while loading or failed and page navigation still clears sort', async () => {
+  const h = harness(), f = h.fixture(); await complete(await h.start(f, 1), 101);
+  headerButton(h).listeners.click(); const old = headerButton(h);
+  const next = h.click('#nextButton'); await tick();
+  assert.equal(f.state.sort, null); assert.equal(h.get('#clearSortButton').disabled, true);
+  old.listeners.click(); assert.equal(f.state.sort, null);
+  f.reads.at(-1).reject(new Error('failed next page')); await next;
+  assert.equal(h.get('#clearSortButton').disabled, true); old.listeners.click(); assert.equal(f.state.sort, null);
+  await complete(await h.start(f, 2), 202); headerButton(h).listeners.click();
+  h.click('#clearSortButton'); assert.equal(f.state.sort, null); assert.equal(f.state.page, 2);
+  assert.equal(f.state.rows[0].recordNumber, 2);
+});
+test('sort toolbar exists outside either view and has a polite summary with a native clear button', () => {
+  assert.match(html, /id="sortSummary"[^>]*role="status"[^>]*aria-live="polite"/);
+  assert.match(html, /<button[^>]*id="clearSortButton"[^>]*type="button"[^>]*disabled/);
+  assert.ok(html.indexOf('id="sortSummary"') < html.indexOf('id="dataTableWrap"'));
+});
+
+test('sort labels keep special column names as literal text in both languages', () => {
+  const h = harness(), f = loadedValues(h, [2, 1]);
+  const name = "<img onerror=alert(1)> {direction} {hidden} 日本語 $& $` $\'";
+  f.state.fields[0].name = name;
+  for (const row of f.state.rows) row.value[name] = row.value.value;
+  h.api.renderData(f.state); headerButton(h).listeners.click();
+  assert.equal(headerButton(h).textContent, name);
+  assert.equal(headerButton(h).attributes['aria-label'], `Sort ${name} descending`);
+  assert.equal(h.get('#sortSummary').textContent, `Current page: ${name} · ascending`);
+  h.click('#languageButton');
+  assert.equal(h.get('#sortSummary').textContent, `現在ページ: ${name} · 昇順`);
+});
+test('retained header from an earlier successful page cannot sort its replacement page', async () => {
+  const h = harness(), f = h.fixture(); await complete(await h.start(f, 1), 101);
+  const oldButton = headerButton(h);
+  await complete(await h.start(f, 2), 202);
+  oldButton.listeners.click(); assert.equal(f.state.sort, null);
+  assert.equal(h.get('#sortSummary').textContent, 'Current page: source order');
+  assert.equal(f.state.page, 2); assert.equal(f.state.rows[0].recordNumber, 2);
+});
+test('sort change to another column starts ascending and does not mutate page readiness or output names', () => {
+  const h = harness(), f = loadedValues(h, [2, 1]);
+  f.state.fields.push({ index: 1, name: 'second' });
+  f.state.rows[0].value.second = 3; f.state.rows[1].value.second = 4;
+  const page = f.state.pageResult; f.state.outputFilename = 'edited-export'; h.api.renderData(f.state);
+  headerButton(h).listeners.click(); headerButton(h).listeners.click();
+  headerButton(h, 2).listeners.click();
+  assert.equal(f.state.sort.field.name, 'second'); assert.equal(f.state.sort.dir, 1);
+  assert.equal(tableHeaders(h)[1].attributes['aria-sort'], undefined);
+  assert.equal(tableHeaders(h)[2].attributes['aria-sort'], 'ascending');
+  assert.equal(f.state.pageResult, page); assert.equal(f.state.outputFilename, 'edited-export');
+  assert.deepEqual(tableOrder(h), [1, 2]);
+});
+test('empty success and unloaded/error states keep sort controls neutral and disabled', async () => {
+  const h = harness(); assert.equal(h.get('#clearSortButton').disabled, true);
+  assert.equal(h.get('#sortSummary').textContent, 'Current page: not loaded');
+  const empty = h.fixture('empty.arrow', []); await h.api.readPage(empty.state);
+  assert.equal(h.get('#clearSortButton').disabled, true);
+  assert.equal(h.get('#sortSummary').textContent, 'Current page: source order');
+  h.click('#recordModeButton'); h.click('#clearSortButton'); assert.equal(empty.state.sort, null);
+  const unloaded = h.mount(h.api.buildFileState({ name: 'unloaded.arrow' }));
+  assert.equal(h.get('#clearSortButton').disabled, true);
+  assert.equal(h.get('#sortSummary').textContent, 'Current page: not loaded');
+  unloaded.error = 'bad header'; unloaded.inspection = 'error'; h.api.renderActive();
+  h.click('#clearSortButton'); assert.equal(unloaded.sort, null);
+});
+test('page-size callback clears sorting and keeps retained headers inert through the replacement read', async () => {
+  const h = harness(), f = h.fixture(); await complete(await h.start(f, 1), 101);
+  headerButton(h).listeners.click(); const old = headerButton(h);
+  const resized = h.get('#pageSizeSelect').listeners.change({ target: { value: '2' } }); await tick();
+  assert.equal(f.state.sort, null); assert.equal(f.state.page, 1); assert.equal(f.state.pageSize, 2);
+  old.listeners.click(); assert.equal(f.state.sort, null); assert.equal(h.get('#clearSortButton').disabled, true);
+  // The first batch is cached; only the second body needs a new read.
+  f.reads.at(-1).resolve(intBody(202)); await resized;
+  old.listeners.click(); assert.equal(f.state.sort, null);
+  assert.equal(h.get('#sortSummary').textContent, 'Current page: source order');
+  assert.deepEqual(tableOrder(h), [1, 2]); assert.equal(f.reads.length, 2);
 });
