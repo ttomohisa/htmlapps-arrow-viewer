@@ -7,6 +7,8 @@ on:
       - main
     paths:
       - "src/**"
+      - "tests/**"
+      - "arrow-viewer.html"
       - "scripts/**"
       - "app.config.json"
       - "dependencies.json"
@@ -29,6 +31,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
 
       - name: Build and verify standalone HTML
         shell: pwsh
