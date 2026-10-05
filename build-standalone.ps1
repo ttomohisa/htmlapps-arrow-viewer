@@ -434,6 +434,12 @@ if ($appConfig.build.PSObject.Properties.Name -contains "sizeBudget" -and $appCo
   }
 }
 
+# Keep the checked-in one-file download in sync only for normal releases.
+# Custom output builds must not overwrite the repository download.
+if (-not $OutputPathWasSpecified) {
+  [System.IO.File]::Copy($OutputPath, (Join-Path $Root "arrow-viewer.html"), $true)
+}
+
 $outputHash = Get-Sha256FileHex $OutputPath
 $outputSizeMb = [Math]::Round($readableBytes / 1MB, 2)
 Write-Host ""

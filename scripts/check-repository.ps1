@@ -221,11 +221,15 @@ if ([string]::IsNullOrWhiteSpace([string]$app.name)) { throw "app.config.json: n
 if ([string]::IsNullOrWhiteSpace([string]$app.slug)) { throw "app.config.json: slug is required" }
 if ([string]::IsNullOrWhiteSpace([string]$app.version)) { throw "app.config.json: version is required" }
 
+# Fail on stale checked-in download code before a build can hide the mismatch.
+$node = Get-Command node -ErrorAction Stop
+& $node.Source (Join-Path $Root "tests/check-release-parity.cjs") --source-only
+if ($LASTEXITCODE -ne 0) { throw "Arrow source/root runtime parity failed." }
+
 $buildArguments = @{}
 if ($ForceDownload) { $buildArguments.ForceDownload = $true }
 & (Join-Path $Root "build-standalone.ps1") @buildArguments
 
-Write-Host "[OK] Repository check passed." -ForegroundColor Green
 
 # WebRTC readiness DataChannel regression
 $webrtcReadyText = Get-Content -Raw -Encoding UTF8 (Join-Path $Root "components\webrtc-qr-pairing.html")
@@ -242,3 +246,19 @@ if (-not $webrtcReadyText.Contains("options.requireReadyChannelOpen!==false&&(!r
   throw "WebRTC application-ready must wait for the designated DataChannel to open."
 }
 
+
+# Run the actual application callbacks against every supported release surface.
+$previousArrowTarget = $env:ARROW_TEST_HTML
+try {
+  foreach ($target in @("src/index.template.html", "dist/index.html", "arrow-viewer.html", "dist/index.self-extract.html")) {
+    $env:ARROW_TEST_HTML = $target
+    & $node.Source --test (Join-Path $Root "tests/page-output.test.cjs")
+    if ($LASTEXITCODE -ne 0) { throw "Arrow page/output regressions failed: $target" }
+  }
+  & $node.Source (Join-Path $Root "tests/check-release-parity.cjs")
+  if ($LASTEXITCODE -ne 0) { throw "Arrow release parity failed." }
+} finally {
+  $env:ARROW_TEST_HTML = $previousArrowTarget
+}
+
+Write-Host "[OK] Repository check passed." -ForegroundColor Green

@@ -55,7 +55,7 @@ Python, Node.js, and a local web server are not required. The builder uses Windo
 3. Inspect schema as Tree or Raw JSON.
 4. Browse records with paging controls. Only record batches needed for the current page are read.
 5. Switch between Table and Record views and inspect full nested values in Cell Inspector.
-6. Copy or save the current page as CSV.
+6. Wait for the current page to finish loading, then copy or save CSV. Export is unavailable during reads and after a read failure. A successfully loaded empty page exports headers.
 
 ## Publish with GitHub Pages
 
@@ -108,12 +108,16 @@ The GitHub Pages version requires one initial request to load the HTML. After th
 
 Apache Arrow is an Apache Software Foundation project. This viewer implements parts of the public Apache Arrow IPC specification and is not affiliated with or endorsed by the Apache Software Foundation.
 
+The repository check requires Node.js 22+ and runs the page/output regression suite on source, readable, root-download, and self-extracted HTML. The tests use synthetic batch bodies and a minimal DOM model; they do not replace browser or complete IPC import checks. Default builds refresh `arrow-viewer.html`; custom `-OutputPath` builds leave it unchanged.
+
 ## Limitations
 
 - Read-only: Arrow IPC files are not edited or rewritten.
 - Feather is not advertised as a supported input format.
 - IPC body buffers compressed with LZ4 / ZSTD are reported as unsupported in v1.0.0.
-- CSV export covers the current page, not the whole file.
+- CSV export covers the successfully loaded current page, preserving visible columns and sorting. It does not cover the whole file.
+- CSV, Cell Inspector/copy, and expanded records include all binary bytes as space-separated hexadecimal, including nested values. Table previews and record summaries remain abbreviated.
+- Schema copy becomes available once the file header is parsed, independently of row-read success.
 - This is a viewer rather than a SQL/query engine.
 
 ## Dependencies

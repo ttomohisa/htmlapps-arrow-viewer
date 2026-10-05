@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Keep page reads and file closure generation-owned so stale results cannot overwrite current rows, errors, loading, or export readiness.
+- Disable and guard CSV until the selected page loads successfully; allow successful empty-page headers and guard schema copy before inspection completes.
+- Preserve complete binary and nested values in CSV, Cell Inspector/copy, and expanded records while retaining compact previews.
+- Add callback/decoder regression tests for all release surfaces and synchronize the root HTML download during normal builds.
+
 ## v1.0.0 - 2026-09-04
 
 - First stable release.
