@@ -1,5 +1,7 @@
 # Arrow Viewer
 
+The header uses EN / JA language targets with localized accessible names and Help titles; the version follows vMAJOR.MINOR.PATCH. The local-processing badge remains 完全ローカル処理 / Fully local processing.
+
 [![GitHub Pages](https://github.com/ttomohisa/htmlapps-arrow-viewer/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/ttomohisa/htmlapps-arrow-viewer/actions/workflows/deploy-pages.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Single HTML](https://img.shields.io/badge/distribution-single%20HTML-0ea5e9)](https://ttomohisa.github.io/htmlapps-arrow-viewer/)
@@ -111,11 +113,13 @@ Apache Arrow is an Apache Software Foundation project. This viewer implements pa
 
 The repository check requires Node.js 22+ and runs the page/output regression suite on source, readable, root-download, and self-extracted HTML. The tests use synthetic batch bodies and a minimal DOM model; they do not replace browser or complete IPC import checks. Default builds refresh `arrow-viewer.html`; custom `-OutputPath` builds leave it unchanged.
 
+Decimal columns sort by their exact numeric values without rounding; displayed and CSV decimal text stays unchanged.
+
 ## Limitations
 
 - Read-only: Arrow IPC files are not edited or rewritten.
 - Feather is not advertised as a supported input format.
-- IPC body buffers compressed with LZ4 / ZSTD are reported as unsupported in v1.0.0.
+- IPC body buffers compressed with LZ4 / ZSTD are reported as unsupported in v1.0.1.
 - CSV export covers the successfully loaded current page, preserving visible columns and sorting. It does not cover the whole file.
 - Sorting compares complete values, including binary bytes beyond the compact preview. Nulls stay last in either direction, and equal values keep their source order. Sorting reads no additional batches.
 - CSV, Cell Inspector/copy, and expanded records include all binary bytes as space-separated hexadecimal, including nested values. Table previews and record summaries remain abbreviated.
@@ -124,7 +128,7 @@ The repository check requires Node.js 22+ and runs the page/output regression su
 
 ## Dependencies
 
-Arrow Viewer v1.0.0 does not bundle third-party runtime JavaScript libraries.
+Arrow Viewer v1.0.1 does not bundle third-party runtime JavaScript libraries.
 
 See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for format/project notices.
 

@@ -1,6 +1,12 @@
 # Changelog
 
-## Unreleased
+## v1.0.1 - 2026-10-06
+
+- Fix numeric ordering of declared Decimal columns using exact BigInt coefficients, preserving precision, null-last/stable ties, and displayed/exported text. Include the genuine Apache IPC fixture and precision/schema-type regressions.
+
+- Standardize EN / JA header targets with localized accessible names and titles. Preserve the existing local-processing badge and Help localization.
+- Synchronize canonical metadata and standalone header versions at v1.0.1.
+- Add source, readable, root-download, and decompressed self-extract header regressions without changing data processing or responsive visibility.
 
 - Add localized current-page sort status and Clear sort in Table and Record views, including hidden sorted columns.
 - Make sortable headers native buttons with next-action labels, active `aria-sort`, and focus restoration after sorting.

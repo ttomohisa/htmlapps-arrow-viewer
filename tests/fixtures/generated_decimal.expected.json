@@ -1,0 +1,1231 @@
+{
+  "sourceCommit": "9ff285c88565f0f6abc855918c6a342e70e4909c",
+  "field": "f0",
+  "scale": 2,
+  "records": [
+    {
+      "recordNumber": 1,
+      "coefficient": "12810"
+    },
+    {
+      "recordNumber": 2,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 3,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 4,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 5,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 6,
+      "coefficient": "-32139"
+    },
+    {
+      "recordNumber": 7,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 8,
+      "coefficient": "-31077"
+    },
+    {
+      "recordNumber": 9,
+      "coefficient": "-30093"
+    },
+    {
+      "recordNumber": 10,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 11,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 12,
+      "coefficient": "-29835"
+    },
+    {
+      "recordNumber": 13,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 14,
+      "coefficient": "-8567"
+    },
+    {
+      "recordNumber": 15,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 16,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 17,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 18,
+      "coefficient": "12630"
+    },
+    {
+      "recordNumber": 19,
+      "coefficient": "-3619"
+    },
+    {
+      "recordNumber": 20,
+      "coefficient": "2797"
+    },
+    {
+      "recordNumber": 21,
+      "coefficient": "26196"
+    },
+    {
+      "recordNumber": 22,
+      "coefficient": "-30271"
+    },
+    {
+      "recordNumber": 23,
+      "coefficient": "-23143"
+    },
+    {
+      "recordNumber": 24,
+      "coefficient": "11003"
+    },
+    {
+      "recordNumber": 25,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 26,
+      "coefficient": "-30014"
+    },
+    {
+      "recordNumber": 27,
+      "coefficient": "-24918"
+    },
+    {
+      "recordNumber": 28,
+      "coefficient": "-24170"
+    },
+    {
+      "recordNumber": 29,
+      "coefficient": "14521"
+    },
+    {
+      "recordNumber": 30,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 31,
+      "coefficient": "12060"
+    },
+    {
+      "recordNumber": 32,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 33,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 34,
+      "coefficient": "-9801"
+    },
+    {
+      "recordNumber": 35,
+      "coefficient": "31847"
+    },
+    {
+      "recordNumber": 36,
+      "coefficient": "-22066"
+    },
+    {
+      "recordNumber": 37,
+      "coefficient": "-5263"
+    },
+    {
+      "recordNumber": 38,
+      "coefficient": "-17575"
+    },
+    {
+      "recordNumber": 39,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 40,
+      "coefficient": "17238"
+    },
+    {
+      "recordNumber": 41,
+      "coefficient": "-32356"
+    },
+    {
+      "recordNumber": 42,
+      "coefficient": "13614"
+    },
+    {
+      "recordNumber": 43,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 44,
+      "coefficient": "16672"
+    },
+    {
+      "recordNumber": 45,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 46,
+      "coefficient": "17974"
+    },
+    {
+      "recordNumber": 47,
+      "coefficient": "5704"
+    },
+    {
+      "recordNumber": 48,
+      "coefficient": "13910"
+    },
+    {
+      "recordNumber": 49,
+      "coefficient": "6611"
+    },
+    {
+      "recordNumber": 50,
+      "coefficient": "18852"
+    },
+    {
+      "recordNumber": 51,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 52,
+      "coefficient": "4922"
+    },
+    {
+      "recordNumber": 53,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 54,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 55,
+      "coefficient": "-21460"
+    },
+    {
+      "recordNumber": 56,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 57,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 58,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 59,
+      "coefficient": "24395"
+    },
+    {
+      "recordNumber": 60,
+      "coefficient": "31140"
+    },
+    {
+      "recordNumber": 61,
+      "coefficient": "-10567"
+    },
+    {
+      "recordNumber": 62,
+      "coefficient": "-25376"
+    },
+    {
+      "recordNumber": 63,
+      "coefficient": "10534"
+    },
+    {
+      "recordNumber": 64,
+      "coefficient": "9067"
+    },
+    {
+      "recordNumber": 65,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 66,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 67,
+      "coefficient": "11640"
+    },
+    {
+      "recordNumber": 68,
+      "coefficient": "30750"
+    },
+    {
+      "recordNumber": 69,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 70,
+      "coefficient": "5173"
+    },
+    {
+      "recordNumber": 71,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 72,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 73,
+      "coefficient": "3292"
+    },
+    {
+      "recordNumber": 74,
+      "coefficient": "-4067"
+    },
+    {
+      "recordNumber": 75,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 76,
+      "coefficient": "18168"
+    },
+    {
+      "recordNumber": 77,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 78,
+      "coefficient": "16223"
+    },
+    {
+      "recordNumber": 79,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 80,
+      "coefficient": "9371"
+    },
+    {
+      "recordNumber": 81,
+      "coefficient": "-17638"
+    },
+    {
+      "recordNumber": 82,
+      "coefficient": "-28518"
+    },
+    {
+      "recordNumber": 83,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 84,
+      "coefficient": "-6401"
+    },
+    {
+      "recordNumber": 85,
+      "coefficient": "32014"
+    },
+    {
+      "recordNumber": 86,
+      "coefficient": "-6596"
+    },
+    {
+      "recordNumber": 87,
+      "coefficient": "430"
+    },
+    {
+      "recordNumber": 88,
+      "coefficient": "4700"
+    },
+    {
+      "recordNumber": 89,
+      "coefficient": "-1470"
+    },
+    {
+      "recordNumber": 90,
+      "coefficient": "-26318"
+    },
+    {
+      "recordNumber": 91,
+      "coefficient": "10845"
+    },
+    {
+      "recordNumber": 92,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 93,
+      "coefficient": "3833"
+    },
+    {
+      "recordNumber": 94,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 95,
+      "coefficient": "-28987"
+    },
+    {
+      "recordNumber": 96,
+      "coefficient": "-23743"
+    },
+    {
+      "recordNumber": 97,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 98,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 99,
+      "coefficient": "-14085"
+    },
+    {
+      "recordNumber": 100,
+      "coefficient": "8417"
+    },
+    {
+      "recordNumber": 101,
+      "coefficient": "-23404"
+    },
+    {
+      "recordNumber": 102,
+      "coefficient": "19290"
+    },
+    {
+      "recordNumber": 103,
+      "coefficient": "-24834"
+    },
+    {
+      "recordNumber": 104,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 105,
+      "coefficient": "28208"
+    },
+    {
+      "recordNumber": 106,
+      "coefficient": "11714"
+    },
+    {
+      "recordNumber": 107,
+      "coefficient": "8289"
+    },
+    {
+      "recordNumber": 108,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 109,
+      "coefficient": "23597"
+    },
+    {
+      "recordNumber": 110,
+      "coefficient": "-21428"
+    },
+    {
+      "recordNumber": 111,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 112,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 113,
+      "coefficient": "14476"
+    },
+    {
+      "recordNumber": 114,
+      "coefficient": "9235"
+    },
+    {
+      "recordNumber": 115,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 116,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 117,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 118,
+      "coefficient": "-31114"
+    },
+    {
+      "recordNumber": 119,
+      "coefficient": "-21504"
+    },
+    {
+      "recordNumber": 120,
+      "coefficient": "31791"
+    },
+    {
+      "recordNumber": 121,
+      "coefficient": "19785"
+    },
+    {
+      "recordNumber": 122,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 123,
+      "coefficient": "17246"
+    },
+    {
+      "recordNumber": 124,
+      "coefficient": "-9783"
+    },
+    {
+      "recordNumber": 125,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 126,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 127,
+      "coefficient": "12812"
+    },
+    {
+      "recordNumber": 128,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 129,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 130,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 131,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 132,
+      "coefficient": "-3618"
+    },
+    {
+      "recordNumber": 133,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 134,
+      "coefficient": "13646"
+    },
+    {
+      "recordNumber": 135,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 136,
+      "coefficient": "19222"
+    },
+    {
+      "recordNumber": 137,
+      "coefficient": "-13439"
+    },
+    {
+      "recordNumber": 138,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 139,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 140,
+      "coefficient": "4880"
+    },
+    {
+      "recordNumber": 141,
+      "coefficient": "1420"
+    },
+    {
+      "recordNumber": 142,
+      "coefficient": "17085"
+    },
+    {
+      "recordNumber": 143,
+      "coefficient": "-29550"
+    },
+    {
+      "recordNumber": 144,
+      "coefficient": "21970"
+    },
+    {
+      "recordNumber": 145,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 146,
+      "coefficient": "12709"
+    },
+    {
+      "recordNumber": 147,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 148,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 149,
+      "coefficient": "17701"
+    },
+    {
+      "recordNumber": 150,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 151,
+      "coefficient": "17076"
+    },
+    {
+      "recordNumber": 152,
+      "coefficient": "-9263"
+    },
+    {
+      "recordNumber": 153,
+      "coefficient": "22917"
+    },
+    {
+      "recordNumber": 154,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 155,
+      "coefficient": "32473"
+    },
+    {
+      "recordNumber": 156,
+      "coefficient": "-25912"
+    },
+    {
+      "recordNumber": 157,
+      "coefficient": "24839"
+    },
+    {
+      "recordNumber": 158,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 159,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 160,
+      "coefficient": "-10548"
+    },
+    {
+      "recordNumber": 161,
+      "coefficient": "-7663"
+    },
+    {
+      "recordNumber": 162,
+      "coefficient": "20806"
+    },
+    {
+      "recordNumber": 163,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 164,
+      "coefficient": "-3557"
+    },
+    {
+      "recordNumber": 165,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 166,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 167,
+      "coefficient": "9357"
+    },
+    {
+      "recordNumber": 168,
+      "coefficient": "8959"
+    },
+    {
+      "recordNumber": 169,
+      "coefficient": "21467"
+    },
+    {
+      "recordNumber": 170,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 171,
+      "coefficient": "31639"
+    },
+    {
+      "recordNumber": 172,
+      "coefficient": "16150"
+    },
+    {
+      "recordNumber": 173,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 174,
+      "coefficient": "5110"
+    },
+    {
+      "recordNumber": 175,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 176,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 177,
+      "coefficient": "-16427"
+    },
+    {
+      "recordNumber": 178,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 179,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 180,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 181,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 182,
+      "coefficient": "-30698"
+    },
+    {
+      "recordNumber": 183,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 184,
+      "coefficient": "-29971"
+    },
+    {
+      "recordNumber": 185,
+      "coefficient": "-23702"
+    },
+    {
+      "recordNumber": 186,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 187,
+      "coefficient": "17682"
+    },
+    {
+      "recordNumber": 188,
+      "coefficient": "16210"
+    },
+    {
+      "recordNumber": 189,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 190,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 191,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 192,
+      "coefficient": "11968"
+    },
+    {
+      "recordNumber": 193,
+      "coefficient": "-14711"
+    },
+    {
+      "recordNumber": 194,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 195,
+      "coefficient": "28104"
+    },
+    {
+      "recordNumber": 196,
+      "coefficient": "16537"
+    },
+    {
+      "recordNumber": 197,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 198,
+      "coefficient": "-24324"
+    },
+    {
+      "recordNumber": 199,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 200,
+      "coefficient": "-6673"
+    },
+    {
+      "recordNumber": 201,
+      "coefficient": "8933"
+    },
+    {
+      "recordNumber": 202,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 203,
+      "coefficient": "2119"
+    },
+    {
+      "recordNumber": 204,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 205,
+      "coefficient": "1016"
+    },
+    {
+      "recordNumber": 206,
+      "coefficient": "-16494"
+    },
+    {
+      "recordNumber": 207,
+      "coefficient": "14781"
+    },
+    {
+      "recordNumber": 208,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 209,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 210,
+      "coefficient": "5626"
+    },
+    {
+      "recordNumber": 211,
+      "coefficient": "-31956"
+    },
+    {
+      "recordNumber": 212,
+      "coefficient": "30600"
+    },
+    {
+      "recordNumber": 213,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 214,
+      "coefficient": "-28300"
+    },
+    {
+      "recordNumber": 215,
+      "coefficient": "14256"
+    },
+    {
+      "recordNumber": 216,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 217,
+      "coefficient": "15845"
+    },
+    {
+      "recordNumber": 218,
+      "coefficient": "31858"
+    },
+    {
+      "recordNumber": 219,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 220,
+      "coefficient": "29149"
+    },
+    {
+      "recordNumber": 221,
+      "coefficient": "12544"
+    },
+    {
+      "recordNumber": 222,
+      "coefficient": "26617"
+    },
+    {
+      "recordNumber": 223,
+      "coefficient": "8150"
+    },
+    {
+      "recordNumber": 224,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 225,
+      "coefficient": "-29686"
+    },
+    {
+      "recordNumber": 226,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 227,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 228,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 229,
+      "coefficient": "-25744"
+    },
+    {
+      "recordNumber": 230,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 231,
+      "coefficient": "4115"
+    },
+    {
+      "recordNumber": 232,
+      "coefficient": "-23168"
+    },
+    {
+      "recordNumber": 233,
+      "coefficient": "-8288"
+    },
+    {
+      "recordNumber": 234,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 235,
+      "coefficient": "3564"
+    },
+    {
+      "recordNumber": 236,
+      "coefficient": "-6512"
+    },
+    {
+      "recordNumber": 237,
+      "coefficient": "32156"
+    },
+    {
+      "recordNumber": 238,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 239,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 240,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 241,
+      "coefficient": "-9543"
+    },
+    {
+      "recordNumber": 242,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 243,
+      "coefficient": "5717"
+    },
+    {
+      "recordNumber": 244,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 245,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 246,
+      "coefficient": "-21109"
+    },
+    {
+      "recordNumber": 247,
+      "coefficient": "6382"
+    },
+    {
+      "recordNumber": 248,
+      "coefficient": "29959"
+    },
+    {
+      "recordNumber": 249,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 250,
+      "coefficient": "31247"
+    },
+    {
+      "recordNumber": 251,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 252,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 253,
+      "coefficient": "-20284"
+    },
+    {
+      "recordNumber": 254,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 255,
+      "coefficient": "-25176"
+    },
+    {
+      "recordNumber": 256,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 257,
+      "coefficient": "22586"
+    },
+    {
+      "recordNumber": 258,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 259,
+      "coefficient": "10938"
+    },
+    {
+      "recordNumber": 260,
+      "coefficient": "2131"
+    },
+    {
+      "recordNumber": 261,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 262,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 263,
+      "coefficient": "-31789"
+    },
+    {
+      "recordNumber": 264,
+      "coefficient": "26675"
+    },
+    {
+      "recordNumber": 265,
+      "coefficient": "22937"
+    },
+    {
+      "recordNumber": 266,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 267,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 268,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 269,
+      "coefficient": "-13768"
+    },
+    {
+      "recordNumber": 270,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 271,
+      "coefficient": "23075"
+    },
+    {
+      "recordNumber": 272,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 273,
+      "coefficient": "20476"
+    },
+    {
+      "recordNumber": 274,
+      "coefficient": "21354"
+    },
+    {
+      "recordNumber": 275,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 276,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 277,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 278,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 279,
+      "coefficient": "28078"
+    },
+    {
+      "recordNumber": 280,
+      "coefficient": "-11895"
+    },
+    {
+      "recordNumber": 281,
+      "coefficient": "5255"
+    },
+    {
+      "recordNumber": 282,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 283,
+      "coefficient": "3990"
+    },
+    {
+      "recordNumber": 284,
+      "coefficient": "31818"
+    },
+    {
+      "recordNumber": 285,
+      "coefficient": "30891"
+    },
+    {
+      "recordNumber": 286,
+      "coefficient": "-4338"
+    },
+    {
+      "recordNumber": 287,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 288,
+      "coefficient": "13748"
+    },
+    {
+      "recordNumber": 289,
+      "coefficient": "23956"
+    },
+    {
+      "recordNumber": 290,
+      "coefficient": "-4087"
+    },
+    {
+      "recordNumber": 291,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 292,
+      "coefficient": "-25055"
+    },
+    {
+      "recordNumber": 293,
+      "coefficient": "126"
+    },
+    {
+      "recordNumber": 294,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 295,
+      "coefficient": "-24991"
+    },
+    {
+      "recordNumber": 296,
+      "coefficient": "19367"
+    },
+    {
+      "recordNumber": 297,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 298,
+      "coefficient": "-13892"
+    },
+    {
+      "recordNumber": 299,
+      "coefficient": "-12412"
+    },
+    {
+      "recordNumber": 300,
+      "coefficient": "25363"
+    },
+    {
+      "recordNumber": 301,
+      "coefficient": "22967"
+    },
+    {
+      "recordNumber": 302,
+      "coefficient": "-2098"
+    },
+    {
+      "recordNumber": 303,
+      "coefficient": "-1820"
+    },
+    {
+      "recordNumber": 304,
+      "coefficient": "25201"
+    },
+    {
+      "recordNumber": 305,
+      "coefficient": null
+    },
+    {
+      "recordNumber": 306,
+      "coefficient": null
+    }
+  ]
+}
