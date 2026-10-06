@@ -6,7 +6,8 @@ const vm = require('node:vm');
 const zlib = require('node:zlib');
 
 // Actual application functions and event callbacks; DOM and browser I/O are small
-// stand-ins. Fixtures exercise batch decoding, not complete IPC container parsing.
+// stand-ins. Most fixtures exercise batch decoding; the Apache decimal gold
+// fixture below also exercises complete IPC container parsing.
 const target = process.env.ARROW_TEST_HTML || 'src/index.template.html';
 let html = fs.readFileSync(path.resolve(__dirname, '..', target), 'utf8');
 if (html.includes('id="self-extract-payload"')) {
@@ -30,7 +31,7 @@ function harness() {
     };
   }
   const document = { body: element('body'), documentElement: {}, querySelector(s) { if (!elements.has(s)) elements.set(s, element(s)); return elements.get(s); }, querySelectorAll() { return []; }, createElement: element, addEventListener() {} };
-  const context = { console, document, window: { addEventListener() {}, scrollTo() {} }, navigator: { language: 'en', clipboard: { writeText(text) { writes.push(text); if (clipboardDeferred) { const d = deferred(); pendingClipboard.push(d); return d.promise; } return Promise.resolve(); } } }, localStorage: { getItem() { return null; }, setItem() {} }, TextDecoder, TextEncoder, Uint8Array, ArrayBuffer, DataView, Map, Set, Date, Blob, URL: { createObjectURL(blob) { downloads.push({ blob }); return 'blob:synthetic'; }, revokeObjectURL() {} }, setTimeout() { return 1; }, clearTimeout() {}, APP_CONFIG: { slug: 'arrow-viewer', name: 'Arrow Viewer', nameJa: 'Arrow Viewer', version: '1.0.0' } };
+  const context = { console, document, window: { addEventListener() {}, scrollTo() {} }, navigator: { language: 'en', clipboard: { writeText(text) { writes.push(text); if (clipboardDeferred) { const d = deferred(); pendingClipboard.push(d); return d.promise; } return Promise.resolve(); } } }, localStorage: { getItem() { return null; }, setItem() {} }, TextDecoder, TextEncoder, Uint8Array, ArrayBuffer, DataView, Map, Set, Date, Blob, URL: { createObjectURL(blob) { downloads.push({ blob }); return 'blob:synthetic'; }, revokeObjectURL() {} }, setTimeout(callback, delay) { if (delay === 0) queueMicrotask(callback); return 1; }, clearTimeout() {}, APP_CONFIG: { slug: 'arrow-viewer', name: 'Arrow Viewer', nameJa: 'Arrow Viewer', version: '1.0.0' } };
   vm.createContext(context);
   const begin = html.indexOf('      const $=s=>'), end = html.indexOf('    })();', begin);
   assert.ok(begin > 0 && end > begin, 'application closure exists');
@@ -383,4 +384,88 @@ test('page-size callback clears sorting and keeps retained headers inert through
   old.listeners.click(); assert.equal(f.state.sort, null);
   assert.equal(h.get('#sortSummary').textContent, 'Current page: source order');
   assert.deepEqual(tableOrder(h), [1, 2]); assert.equal(f.reads.length, 2);
+});
+
+function decimalColumn(api, coefficients, scale, bitWidth = 128) {
+  const width = bitWidth / 8, validityLength = Math.ceil(coefficients.length / 8);
+  const bytes = new Uint8Array(validityLength + coefficients.length * width);
+  coefficients.forEach((coefficient, index) => {
+    if (coefficient === null) return;
+    bytes[index >> 3] |= 1 << (index & 7);
+    let value = BigInt.asUintN(bitWidth, coefficient);
+    for (let offset = 0; offset < width; offset++) { bytes[validityLength + index * width + offset] = Number(value & 255n); value >>= 8n; }
+  });
+  const type = { id: 7, name: 'decimal', precision: bitWidth === 128 ? 38 : 76, scale, bitWidth };
+  const field = { name: 'value', type, children: [] };
+  const batch = { length: coefficients.length, nodes: [{ length: coefficients.length, nullCount: coefficients.filter(value => value === null).length }], buffers: [{ offset: 0, length: validityLength }, { offset: validityLength, length: coefficients.length * width }], compression: null };
+  return { type, values: api.decodeBatchColumns([field], batch, bytes, new Map()).get('value') };
+}
+for (const [scale, bitWidth] of [[2, 128], [2, 256], [0, 128], [-2, 128]]) {
+  test(`typed decimal${bitWidth} scale ${scale} sorting retains exact coefficients, null-last and stable ties`, () => {
+    const h = harness(), magnitude = 10n ** BigInt(bitWidth === 128 ? 35 : 73);
+    const coefficients = [magnitude + 2n, magnitude + 1n, -magnitude - 1n, -magnitude - 2n, null, magnitude + 1n];
+    const decoded = decimalColumn(h.api, coefficients, scale, bitWidth), f = loadedValues(h, decoded.values);
+    f.state.fields[0].type = decoded.type;
+    const original = f.state.rows.slice(), displayed = f.state.rows.map(row => row.value.value);
+    for (const [dir, expected] of [[1, [4, 3, 2, 6, 1, 5]], [-1, [1, 2, 6, 3, 4, 5]]]) {
+      f.state.sort = { field: f.state.fields[0], dir }; h.api.renderData(f.state);
+      assert.deepEqual(tableOrder(h), expected); assert.deepEqual(csvOrder(h, f.state), expected);
+      assert.deepEqual(f.state.rows, original); assert.deepEqual(f.state.rows.map(row => row.value.value), displayed);
+      assert.equal(f.reads.length, 0);
+    }
+  });
+}
+test('decimal ordering handles negative fractions, zero and positive values without changing exported spelling', () => {
+  const h = harness(), decoded = decimalColumn(h.api, [1000n, -200n, -1820n, -2098n, 0n, null, -2098n], 2);
+  const f = loadedValues(h, decoded.values); f.state.fields[0].type = decoded.type; f.state.sort = { field: f.state.fields[0], dir: 1 };
+  assert.equal(h.api.buildCurrentCsv(f.state), '__record,value\r\n4,-20.98\r\n7,-20.98\r\n3,-18.20\r\n2,-2.00\r\n5,0.00\r\n1,10.00\r\n6,null');
+});
+test('dictionary-decoded decimals use their logical value type while ordinary text keeps lexical order', () => {
+  const h = harness(), type = { id: 7, name: 'decimal', precision: 10, scale: 2, bitWidth: 128 };
+  const field = { name: 'value', type, children: [], dictionary: { id: 1n, indexType: { id: 2, name: 'int', bitWidth: 8, signed: true } } };
+  const values = h.api.decodeBatchColumns([field], { length: 4, nodes: [{ length: 4, nullCount: 1 }], buffers: [{ offset: 0, length: 1 }, { offset: 1, length: 4 }], compression: null }, Uint8Array.from([7, 0, 1, 2, 0]), new Map([['1', ['10.00', '-2.00', '2.00']]])).get('value');
+  const f = loadedValues(h, values); f.state.fields[0] = { ...field, index: 0 }; f.state.sort = { field: f.state.fields[0], dir: 1 };
+  assert.deepEqual(Array.from(h.api.sortedRows(f.state), row => row.recordNumber), [2, 3, 1, 4]);
+  f.state.fields[0].type = { id: 5, name: 'utf8' };
+  assert.deepEqual(Array.from(h.api.sortedRows(f.state), row => row.recordNumber), [2, 1, 3, 4]);
+});
+test('Apache decimal IPC fixture page 7 sorts numerically in Table, Record, Copy and Save with exact values', async () => {
+  const h = harness(), file = new File([fs.readFileSync(path.join(__dirname, 'fixtures/generated_decimal.arrow'))], 'generated_decimal.arrow');
+  const state = h.mount(h.api.buildFileState(file)); await h.api.inspectFile(state);
+  assert.equal(state.error, ''); assert.equal(state.totalRows, 306); assert.equal(state.header.batches.length, 36); assert.equal(state.fields[0].type.id, 7);
+  await h.get('#pageSizeSelect').listeners.change({ target: { value: '50' } });
+  await h.get('#pageJump').listeners.change({ target: { value: '7' } });
+  const original = state.rows.slice(); assert.deepEqual(Array.from(original, row => row.recordNumber), [301, 302, 303, 304, 305, 306]);
+  assert.deepEqual(Array.from(original, row => row.value.f0), ['229.67', '-20.98', '-18.20', '252.01', null, null]);
+  for (const field of state.fields.slice(1)) state.hiddenFields.add(field.index);
+  h.api.renderData(state); headerButton(h).listeners.click();
+  const ascending = [302, 303, 301, 304, 305, 306];
+  assert.deepEqual(tableOrder(h), ascending); assert.deepEqual(csvOrder(h, state), ascending);
+  const csv = '__record,f0\r\n302,-20.98\r\n303,-18.20\r\n301,229.67\r\n304,252.01\r\n305,null\r\n306,null';
+  assert.equal(h.api.buildCurrentCsv(state), csv); await h.click('#copyCsvButton'); assert.equal(h.writes.at(-1), csv);
+  h.click('#downloadCsvButton'); assert.equal(await h.downloads.find(entry => entry.blob).blob.text(), csv);
+  h.click('#recordModeButton'); assert.deepEqual(h.get('#recordList').children.map(card => Number(card.children[0].children[0].textContent.match(/\d+$/)[0])), ascending);
+  h.click('#tableModeButton'); headerButton(h).listeners.click(); assert.deepEqual(tableOrder(h), [304, 301, 303, 302, 305, 306]);
+  h.click('#clearSortButton'); assert.deepEqual(tableOrder(h), [301, 302, 303, 304, 305, 306]); assert.deepEqual(state.rows, original);
+});
+test('Apache decimal IPC pages match independent gold coefficients in both sort directions', async () => {
+  const h = harness(), state = h.mount(h.api.buildFileState(new File([fs.readFileSync(path.join(__dirname, 'fixtures/generated_decimal.arrow'))], 'gold.arrow')));
+  const gold = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/generated_decimal.expected.json'), 'utf8'));
+  await h.api.inspectFile(state); assert.equal(state.error, '');
+  for (const [pageSize, page] of [[100, 1], [100, 2], [100, 4], [50, 7]]) {
+    state.pageSize = pageSize; state.page = page; await h.api.readPage(state);
+    const expectedRows = gold.records.slice((page - 1) * pageSize, page * pageSize), original = state.rows.slice();
+    assert.deepEqual(Array.from(original, row => row.recordNumber), expectedRows.map(row => row.recordNumber));
+    for (const direction of [1, -1]) {
+      state.sort = { field: state.fields[0], dir: direction };
+      const expected = expectedRows.slice().sort((a, b) => {
+        if (a.coefficient === null && b.coefficient === null) return a.recordNumber - b.recordNumber;
+        if (a.coefficient === null) return 1; if (b.coefficient === null) return -1;
+        const x = BigInt(a.coefficient), y = BigInt(b.coefficient);
+        return (x < y ? -1 : x > y ? 1 : 0) * direction || a.recordNumber - b.recordNumber;
+      }).map(row => row.recordNumber);
+      assert.deepEqual(Array.from(h.api.sortedRows(state), row => row.recordNumber), expected);
+      assert.deepEqual(csvOrder(h, state), expected); assert.deepEqual(state.rows, original);
+    }
+  }
 });

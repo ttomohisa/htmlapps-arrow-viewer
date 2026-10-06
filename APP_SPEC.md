@@ -1,12 +1,12 @@
 # Arrow Viewer — App Specification
 
-Version: v1.0.0
+Version: v1.0.1
 
 ## Purpose
 
 Open Apache Arrow IPC File / Stream inputs locally and inspect their schema, metadata, record batches, dictionaries, and rows without uploading files.
 
-## v1.0.0 scope
+## v1.0.1 scope
 
 - Open one or more `.arrow`, `.arrows`, or `.ipc` files.
 - Detect Arrow IPC File and Arrow IPC Stream containers.
@@ -18,6 +18,7 @@ Open Apache Arrow IPC File / Stream inputs locally and inspect their schema, met
 - Table / Record views, visible-column selection, current-page sorting, and Cell Inspector.
 - Sortable column headers are native keyboard-operable buttons. Activate repeatedly to cycle ascending, descending, and source order; expose the active direction with `aria-sort`.
 - Show a localized current-page sort summary and Clear sort in both Table and Record views, including when the sorted column is hidden. Clearing sort restores source order without reading another batch.
+- Declared decimal columns (including dictionary-encoded decimals) sort by exact signed coefficients at their common scale, without Number conversion. Nulls remain last and equal values preserve source order; displayed and exported decimal strings are unchanged. Ordinary text and composite sorting retain their existing behavior.
 - Compare complete binary/nested values rather than abbreviated previews. Prepare each comparison key once per sort, preserve exact primitive Number/BigInt comparisons, keep nulls last in both directions, and keep ties in source order.
 - Sorting is page-local and per file. Page/page-size changes clear it; switching views, hiding columns, changing language, and returning to a loaded tab preserve it. Stale header callbacks cannot sort a newer page or another file.
 - Decode common primitive values, timestamps, List / Struct nested values, and dictionary-encoded fields used by the included fixtures.
@@ -31,7 +32,7 @@ Open Apache Arrow IPC File / Stream inputs locally and inspect their schema, met
 - Allow additional file drag and drop while files are already open.
 - Japanese / English UI, responsive mobile bottom navigation, and multiple-file tabs.
 
-## Non-goals for v1.0.0
+## Non-goals for v1.0.1
 
 - Editing or rewriting Arrow IPC files.
 - Feather as an advertised supported format.
@@ -50,3 +51,9 @@ Runtime network access is blocked by CSP (`connect-src 'none'`). Selected files 
 - Closing a file invalidates in-flight work. Switching tabs does not invalidate a valid background read, but that read cannot repaint the active tab.
 - Late clipboard completion cannot announce CSV success for a different file/page request.
 - The normal build synchronizes the root `arrow-viewer.html` download; custom output builds leave it unchanged. Source, standalone, root, and self-extracted runtime behavior share the regression suite.
+
+## Header consistency
+
+- Use EN in Japanese UI and JA in English UI, with localized target-language accessible names and titles.
+- Preserve 完全ローカル処理 / Fully local processing and localized Help labels/titles.
+- Header versions use vMAJOR.MINOR.PATCH; existing responsive visibility is unchanged.

@@ -1,5 +1,7 @@
 # Arrow Viewer
 
+ヘッダーの言語切り替えは EN / JA で統一し、切り替え先とヘルプの説明は表示言語に合わせます。バージョンは vMAJOR.MINOR.PATCH 形式で、バッジは「完全ローカル処理」/「Fully local processing」のままです。
+
 [![GitHub Pages](https://github.com/ttomohisa/htmlapps-arrow-viewer/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/ttomohisa/htmlapps-arrow-viewer/actions/workflows/deploy-pages.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Single HTML](https://img.shields.io/badge/distribution-single%20HTML-0ea5e9)](https://ttomohisa.github.io/htmlapps-arrow-viewer/)
@@ -109,11 +111,13 @@ GitHub Pages版では最初のHTML配信だけ通信が発生します。その�
 
 Apache ArrowはApache Software Foundationのプロジェクトです。本ツールは公開されているApache Arrow IPC仕様の一部を実装する独立したツールで、Apache Software Foundationの公式ツールではありません。
 
+Decimal列は丸めず正確な数値順に並べ替えます。表示値とCSVの小数表記は変えません。
+
 ## 制限事項
 
 - 閲覧専用です。Arrow IPCファイルを編集・再生成する機能はありません。
 - Featherは正式対応形式として案内していません。
-- LZ4 / ZSTDで圧縮されたIPC Body Bufferはv1.0.0では未対応として扱います。
+- LZ4 / ZSTDで圧縮されたIPC Body Bufferはv1.0.1では未対応として扱います。
 - CSV保存は正常に読み込んだ現在ページが対象で、表示列とソート順を保持します。ファイル全体の出力には対応しません。
 - 並べ替えでは、省略表示の先にあるバイナリも含めて完全な値を比較します。nullは昇順・降順とも末尾になり、同じ値は元の順序を保ちます。追加のバッチ読み込みは発生しません。
 - CSV、セルの内容／コピー、展開したレコードでは、ネスト内も含めたバイナリ値の全バイトを空白区切りの16進数で表示します。表やレコード見出しのプレビューは省略表示のままです。
@@ -122,7 +126,7 @@ Apache ArrowはApache Software Foundationのプロジェクトです。本ツー
 
 ## 依存関係
 
-Arrow Viewer v1.0.0 は、実行時のサードパーティJavaScriptライブラリを同梱していません。
+Arrow Viewer v1.0.1 は、実行時のサードパーティJavaScriptライブラリを同梱していません。
 
 形式・プロジェクトに関する補足は [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) を確認してください。
 
