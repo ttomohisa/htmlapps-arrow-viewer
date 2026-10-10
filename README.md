@@ -10,6 +10,8 @@ The header uses EN / JA language targets with localized accessible names and Hel
 
 A privacy-focused, single-HTML viewer for opening Apache Arrow IPC File / Stream inputs and inspecting schema, metadata, record batches, dictionaries, and data without uploading selected files to a server.
 
+Dialog contents remain scrollable in short or zoomed windows, and the background page stays still while a dialog is open.
+
 ## 🚀 Live demo
 
 ### [Open Arrow Viewer on GitHub Pages](https://ttomohisa.github.io/htmlapps-arrow-viewer/)

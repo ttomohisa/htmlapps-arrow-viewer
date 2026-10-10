@@ -3,7 +3,7 @@
   "name": "Arrow Viewer",
   "nameJa": "Arrow Viewer",
   "slug": "arrow-viewer",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Open Apache Arrow IPC files and streams locally and inspect schema, record batches, dictionaries, and data.",
   "descriptionJa": "Apache Arrow IPC File / Streamをブラウザー内で開き、スキーマ・レコードバッチ・辞書・データを確認します。",
   "defaultLanguage": "auto",

@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.0.2 - 2026-10-10
+
+- Keep dialog bodies within short windows without nested outer scrollbars, preserving the close control and narrow bottom sheet.
+- Prevent the background page from scrolling while a dialog is open.
+
 ## v1.0.1 - 2026-10-06
 
 - Fix numeric ordering of declared Decimal columns using exact BigInt coefficients, preserving precision, null-last/stable ties, and displayed/exported text. Include the genuine Apache IPC fixture and precision/schema-type regressions.

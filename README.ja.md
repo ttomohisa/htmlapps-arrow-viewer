@@ -10,6 +10,8 @@
 
 Apache Arrow IPC File / Streamを外部へアップロードせず、スキーマ・メタデータ・レコードバッチ・辞書・データをブラウザ内だけで確認できる単一HTMLビューアです。
 
+短い画面や拡大表示でもダイアログ内をスクロールでき、開いている間は背景のページが動きません。
+
 ## 🚀 デモ
 
 ### [GitHub PagesでArrow Viewerを開く](https://ttomohisa.github.io/htmlapps-arrow-viewer/)
