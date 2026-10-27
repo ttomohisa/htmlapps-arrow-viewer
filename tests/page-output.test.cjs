@@ -14,14 +14,14 @@ if (html.includes('id="self-extract-payload"')) {
   const payload = html.match(/<script id="self-extract-payload" type="application\/octet-stream">([\s\S]*?)<\/script>/)[1];
   html = zlib.gunzipSync(Buffer.from(payload.replace(/\s/g, ''), 'base64')).toString('utf8');
 }
-function harness() {
+function harness(options={}) {
   const elements = new Map(), writes = [], downloads = [], pendingClipboard = [];
   let clipboardDeferred = false;
   function element(tag = 'div') {
     const classes = new Set();
     return { tag, value: '', disabled: false, hidden: false, textContent: '', innerHTML: '', style: {}, dataset: {}, children: [], listeners: {}, attributes: {},
       classList: { add(c) { classes.add(c); }, remove(c) { classes.delete(c); }, toggle(c, flag) { if (flag ?? !classes.has(c)) classes.add(c); else classes.delete(c); }, contains(c) { return classes.has(c); } },
-      addEventListener(type, fn) { this.listeners[type] = fn; }, setAttribute(name, value) { this.attributes[name] = String(value); },
+      addEventListener(type, fn) { this.listeners[type] = fn; }, setAttribute(name, value) { this.attributes[name] = String(value); }, removeAttribute(name) { delete this.attributes[name]; },
       focus() { document.activeElement = this; },
       querySelector(selector) { const index = selector.match(/^\[data-sort-index="(\d+)"\]$/)?.[1]; return this.children.find(child => child.dataset?.sortIndex === index) || this.children.map(child => child.querySelector?.(selector)).find(Boolean) || null; },
       append(...children) { this.children.push(...children); }, replaceChildren(...children) { this.children = children; },
@@ -32,10 +32,12 @@ function harness() {
   }
   const document = { body: element('body'), documentElement: {}, querySelector(s) { if (!elements.has(s)) elements.set(s, element(s)); return elements.get(s); }, querySelectorAll() { return []; }, createElement: element, addEventListener() {} };
   const context = { console, document, window: { addEventListener() {}, scrollTo() {} }, navigator: { language: 'en', clipboard: { writeText(text) { writes.push(text); if (clipboardDeferred) { const d = deferred(); pendingClipboard.push(d); return d.promise; } return Promise.resolve(); } } }, localStorage: { getItem() { return null; }, setItem() {} }, TextDecoder, TextEncoder, Uint8Array, ArrayBuffer, DataView, Map, Set, Date, Blob, URL: { createObjectURL(blob) { downloads.push({ blob }); return 'blob:synthetic'; }, revokeObjectURL() {} }, setTimeout(callback, delay) { if (delay === 0) queueMicrotask(callback); return 1; }, clearTimeout() {}, APP_CONFIG: { slug: 'arrow-viewer', name: 'Arrow Viewer', nameJa: 'Arrow Viewer', version: '1.0.0' } };
+  Object.assign(context,options);
   vm.createContext(context);
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '../components/ui-conventions.js'), 'utf8'), context);
   const begin = html.indexOf('      const $=s=>'), end = html.indexOf('    })();', begin);
   assert.ok(begin > 0 && end > begin, 'application closure exists');
-  vm.runInContext(html.slice(begin, end) + '\n globalThis.api={state,sortedRows,buildFileState,readPage,buildCurrentCsv,copyCsv,downloadCsv,prettyValue,cellText,decodeBatchColumns,renderData,renderActive,rootFields,closeFile,activateFile,inspectFile,openCell,setHeaderDetector(fn){detectContainer=fn;}};', context);
+  vm.runInContext(html.slice(begin, end) + '\n globalThis.api={state,sortedRows,buildFileState,readPage,buildCurrentCsv,copyCsv,downloadCsv,prettyValue,cellText,decodeBatchColumns,renderData,renderActive,rootFields,closeFile,activateFile,inspectFile,openCell,applyLanguage,removeFile,setHeaderDetector(fn){detectContainer=fn;}};', context);
   const api = context.api;
   const get = s => document.querySelector(s);
   function mount(fileState) { api.state.files.push(fileState); api.state.activeId = fileState.id; api.renderActive(); return fileState; }
@@ -50,7 +52,7 @@ function harness() {
   }
   async function start(f, page) { f.state.page = page; const promise = api.readPage(f.state); await tick(); return { promise, read: f.reads.at(-1) }; }
   const click = s => get(s).listeners.click();
-  return { api, get, document, writes, downloads, pendingClipboard, deferClipboard() { clipboardDeferred = true; }, fixture, mount, start, click };
+  return { api, context, get, document, writes, downloads, pendingClipboard, deferClipboard() { clipboardDeferred = true; }, fixture, mount, start, click };
 }
 function deferred() { let resolve, reject; const promise = new Promise((r, j) => { resolve = r; reject = j; }); return { promise, resolve, reject }; }
 function intBody(n) { const b = new ArrayBuffer(4); new DataView(b).setInt32(0, n, true); return b; }
@@ -468,4 +470,22 @@ test('Apache decimal IPC pages match independent gold coefficients in both sort 
       assert.deepEqual(csvOrder(h, state), expected); assert.deepEqual(state.rows, original);
     }
   }
+});
+
+test('shared language priority is read-only and explicit switch retains file state when storage is blocked',async()=>{
+ const writes=[],storage={getItem:k=>k==='browser-kitty:ui-language:v1'?'ja':'en',setItem:(k,v)=>writes.push([k,v])};
+ const h=harness({localStorage:storage});assert.equal(h.api.state.language,'ja');assert.equal(writes.length,0);const f=h.fixture();f.state.outputFilename='edited 名前';f.state.hiddenFields.add(0);const before=f.state.readGeneration;
+ storage.setItem=()=>{throw Error('blocked')};h.click('#languageButton');assert.equal(h.api.state.language,'en');assert.equal(h.api.state.files[0],f.state);assert.equal(f.state.outputFilename,'edited 名前');assert.equal(f.state.readGeneration,before);assert.ok(f.state.hiddenFields.has(0));assert.match(h.get('#languageNotice').textContent,/screen only/);
+});
+test('actual copy callback prevents duplicates and language rendering preserves independent output errors',async()=>{
+ const h=harness(),f=h.fixture();await complete(await h.start(f,1),101);f.state.outputErrors.download='csvFailed';h.deferClipboard();const copying=h.click('#copyCsvButton');await h.click('#copyCsvButton');assert.equal(h.writes.length,1);assert.equal(h.get('#copyCsvButton').disabled,true);h.click('#languageButton');assert.equal(h.get('#copyCsvButton').disabled,true);h.pendingClipboard[0].resolve();await copying;assert.equal(f.state.outputErrors.download,'csvFailed');assert.match(h.get('#outputNotice').textContent,/CSV/);
+});
+test('app removal confirmation scopes one file, cancels without loss and guards replaced generation',async()=>{
+ const h=harness(),a=h.fixture('a.arrow'),b=h.fixture('b.arrow');let answer=deferred(),ask;
+ h.context.window.AppConfirm={ask:options=>{ask=options;return answer.promise;}};let removal=h.api.removeFile(a.state.id);assert.match(ask.title,/a.arrow/);assert.equal(ask.cancelLabel,'Cancel');answer.resolve(false);await removal;assert.equal(h.api.state.files.length,2);
+ answer=deferred();removal=h.api.removeFile(a.state.id);a.state.fileGeneration++;answer.resolve(true);await removal;assert.equal(h.api.state.files.length,2);
+ answer=deferred();removal=h.api.removeFile(a.state.id);answer.resolve(true);await removal;assert.equal(h.api.state.files.length,1);assert.equal(h.api.state.files[0],b.state);
+});
+test('failed actual download remains retryable and translates without clearing its failure',async()=>{
+ const h=harness(),f=h.fixture();await complete(await h.start(f,1),101);const create=h.context.URL.createObjectURL;h.context.URL.createObjectURL=()=>{throw Error('blocked')};h.click('#downloadCsvButton');assert.equal(f.state.outputErrors.download,'csvFailed');h.click('#languageButton');assert.equal(f.state.outputErrors.download,'csvFailed');assert.match(h.get('#outputNotice').textContent,/もう一度/);h.context.URL.createObjectURL=create;h.click('#downloadCsvButton');assert.equal(f.state.outputErrors.download,'');assert.match(h.get('#appToastMessage').textContent,/開始/);
 });

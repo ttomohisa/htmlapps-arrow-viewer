@@ -74,3 +74,5 @@
 - Initial Arrow IPC File / Stream viewer.
 - Added schema tree/raw views, metadata, record batch and dictionary information, paginated preview, Cell Inspector, and CSV export.
 - Added local decoding for the Arrow types used by the included IPC fixtures.
+
+Common UI v1: Work remains in this tab only. CSV saves visible columns on the current page and reports download started. Language uses URL, shared preference, legacy preference, then browser priority; switching retains file/page settings. Removing a file asks before discarding its view settings and leaves the original intact. Read/export failures persist with retry guidance.

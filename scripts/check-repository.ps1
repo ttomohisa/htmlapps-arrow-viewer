@@ -278,3 +278,6 @@ foreach ($HelpArtifact in @("src/index.template.html", "dist/index.html", "dist/
   & node (Join-Path $Root "scripts/test-help-copy.cjs") --html (Join-Path $Root $HelpArtifact)
   if ($LASTEXITCODE -ne 0) { throw "Help copy regression failed: $HelpArtifact" }
 }
+
+& node --test (Join-Path $Root "tests/ui-conventions.test.cjs") (Join-Path $Root "tests/mobile-help-version.test.cjs")
+if ($LASTEXITCODE -ne 0) { throw "Common UI or Help layout regressions failed." }

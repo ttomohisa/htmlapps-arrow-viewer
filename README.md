@@ -143,3 +143,5 @@ Bug reports and feature proposals are welcome through GitHub Issues. See [CONTRI
 Copyright © 2026 ttomohisa
 
 Licensed under the [MIT License](LICENSE).
+
+Common UI v1: Work remains in this tab only. CSV saves visible columns on the current page and reports download started. Language uses URL, shared preference, legacy preference, then browser priority; switching retains file/page settings. Removing a file asks before discarding its view settings and leaves the original intact. Read/export failures persist with retry guidance.

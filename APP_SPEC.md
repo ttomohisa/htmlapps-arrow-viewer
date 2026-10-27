@@ -67,3 +67,5 @@ Runtime network access is blocked by CSP (`connect-src 'none'`). Selected files 
 - Help, Cell Inspector, and visible-column dialogs use a bounded viewport height with a fixed header and independently scrolling body.
 - Narrow screens retain the safe-area-aware bottom sheet; the body fits below the header without a second outer scrollbar.
 - Background scrolling is locked while a modal is open. Native Close, Escape, backdrop dismissal, and focus behavior remain intact.
+
+Common UI v1: Work remains in this tab only. CSV saves visible columns on the current page and reports download started. Language uses URL, shared preference, legacy preference, then browser priority; switching retains file/page settings. Removing a file asks before discarding its view settings and leaves the original intact. Read/export failures persist with retry guidance.
