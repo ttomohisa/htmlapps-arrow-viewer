@@ -27,7 +27,8 @@ function harness(options={}) {
       append(...children) { this.children.push(...children); }, replaceChildren(...children) { this.children = children; },
       click() { if (this.tag === 'a') downloads.push({ name: this.download, url: this.href }); },
       showModal() { this.open = true; }, close() { this.open = false; },
-      getBoundingClientRect() { return { left: 0, top: 0, right: 100, bottom: 100 }; }, remove() {}, select() {}
+      getBoundingClientRect() { return { left: 0, top: 0, right: 100, bottom: 100 }; }, isConnected:true,
+      remove() { const i=document.body.children.indexOf(this);if(i>=0)document.body.children.splice(i,1);if(document.activeElement===this)document.activeElement=document.body; }, select() { document.activeElement=this; }
     };
   }
   const document = { body: element('body'), documentElement: {}, querySelector(s) { if (!elements.has(s)) elements.set(s, element(s)); return elements.get(s); }, querySelectorAll() { return []; }, createElement: element, addEventListener() {} };
@@ -488,4 +489,10 @@ test('app removal confirmation scopes one file, cancels without loss and guards 
 });
 test('failed actual download remains retryable and translates without clearing its failure',async()=>{
  const h=harness(),f=h.fixture();await complete(await h.start(f,1),101);const create=h.context.URL.createObjectURL;h.context.URL.createObjectURL=()=>{throw Error('blocked')};h.click('#downloadCsvButton');assert.equal(f.state.outputErrors.download,'csvFailed');h.click('#languageButton');assert.equal(f.state.outputErrors.download,'csvFailed');assert.match(h.get('#outputNotice').textContent,/もう一度/);h.context.URL.createObjectURL=create;h.click('#downloadCsvButton');assert.equal(f.state.outputErrors.download,'');assert.match(h.get('#appToastMessage').textContent,/開始/);
+});
+for(const failure of ['select','execCommand'])test(`clipboard fallback cleans private text and restores still-owned focus when ${failure} throws`,async()=>{
+ const h=harness(),f=h.fixture();await complete(await h.start(f,1),101);const prior=h.get('#copyCsvButton');prior.focus();h.context.navigator.clipboard.writeText=async()=>{throw Error('blocked')};const create=h.document.createElement;h.document.createElement=tag=>{const el=create(tag);if(tag==='textarea'&&failure==='select')el.select=function(){h.document.activeElement=this;throw Error('selection')};return el};h.document.execCommand=()=>{throw Error('copy')};await h.click('#copyCsvButton');assert.equal(h.document.body.children.filter(x=>x.tag==='textarea').length,0);assert.equal(h.document.activeElement,prior);assert.equal(f.state.outputErrors.copy,'copyFailed');assert.equal(f.state.copying,false);
+});
+test('clipboard fallback cleanup preserves focus moved to a newer control',async()=>{
+ const h=harness(),f=h.fixture();await complete(await h.start(f,1),101);h.get('#copyCsvButton').focus();const newer=h.get('#outputFilename');h.context.navigator.clipboard.writeText=async()=>{throw Error('blocked')};h.document.execCommand=()=>{newer.focus();throw Error('copy')};await h.click('#copyCsvButton');assert.equal(h.document.body.children.filter(x=>x.tag==='textarea').length,0);assert.equal(h.document.activeElement,newer);
 });
