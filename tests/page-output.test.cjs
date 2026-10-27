@@ -496,3 +496,9 @@ for(const failure of ['select','execCommand'])test(`clipboard fallback cleans pr
 test('clipboard fallback cleanup preserves focus moved to a newer control',async()=>{
  const h=harness(),f=h.fixture();await complete(await h.start(f,1),101);h.get('#copyCsvButton').focus();const newer=h.get('#outputFilename');h.context.navigator.clipboard.writeText=async()=>{throw Error('blocked')};h.document.execCommand=()=>{newer.focus();throw Error('copy')};await h.click('#copyCsvButton');assert.equal(h.document.body.children.filter(x=>x.tag==='textarea').length,0);assert.equal(h.document.activeElement,newer);
 });
+for(const remaining of [false,true])test(`confirmed file removal focuses a surviving action (${remaining?'other files':'last file'}) and cancellation retains opener`,async()=>{
+ const h=harness(),a=h.fixture('remove.arrow');if(remaining)h.fixture('keep.arrow');const opener=h.get('#initiatingClose');opener.focus();h.context.window.AppConfirm={ask:async()=>false};await h.api.removeFile(a.state.id);assert.equal(h.document.activeElement,opener);h.context.window.AppConfirm.ask=async()=>true;await h.api.removeFile(a.state.id);assert.equal(h.document.activeElement,h.get(remaining?'#addFilesButton':'#chooseButton'));
+});
+test('confirmed file removal does not steal focus already moved to another surviving control',async()=>{
+ const h=harness(),a=h.fixture(),answer=deferred();h.get('#initiatingClose').focus();h.context.window.AppConfirm={ask:()=>answer.promise};const removing=h.api.removeFile(a.state.id),later=h.get('#languageButton');later.focus();answer.resolve(true);await removing;assert.equal(h.document.activeElement,later);
+});

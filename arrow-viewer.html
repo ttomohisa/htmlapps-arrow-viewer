@@ -844,7 +844,7 @@
     (() => {
       'use strict';
       const APP_CONFIG={"$schema":"./schemas/app-config.schema.json","name":"Arrow Viewer","nameJa":"Arrow Viewer","slug":"arrow-viewer","version":"1.0.2","description":"Open Apache Arrow IPC files and streams locally and inspect schema, record batches, dictionaries, and data.","descriptionJa":"Apache Arrow IPC File / Streamをブラウザー内で開き、スキーマ・レコードバッチ・辞書・データを確認します。","defaultLanguage":"auto","repository":{"owner":"ttomohisa","name":"htmlapps-arrow-viewer"},"build":{"output":"dist/index.html","blockRuntimeNetwork":true,"selfExtract":{"enabled":true,"output":"dist/index.self-extract.html"},"sizeBudget":{"readableWarningMb":10,"selfExtractWarningMb":6}}};
-      const BUILD_MANIFEST={"schemaVersion":2,"builder":"single-html-app-template/1.2","generatedAtUtc":"2026-10-27T12:10:47.7409639Z","app":{"name":"Arrow Viewer","slug":"arrow-viewer","version":"1.0.2"},"dependencies":[]};
+      const BUILD_MANIFEST={"schemaVersion":2,"builder":"single-html-app-template/1.2","generatedAtUtc":"2026-10-27T12:13:13.3045271Z","app":{"name":"Arrow Viewer","slug":"arrow-viewer","version":"1.0.2"},"dependencies":[]};
       const EMBEDDED_ASSET_BUNDLE={"schemaVersion":2,"dependencies":{}};
       const assetByteCache=new Map();
       const blobUrls=new Set();
@@ -872,7 +872,7 @@
         BrowserKittyUI.setButtonState($('#retryReadButton'),fs?.loading||fs?.inspection==='reading'?'busy':fs?.error?'ready':'unavailable');
         if(state.removing){$('#appConfirmTitle').textContent=t('removeTitle',{name:state.removing.file.name});$('#appConfirmMessage').textContent=t('removeMessage');$('#appConfirmCancel').textContent=BrowserKittyUI.text('cancel',state.language);$('#appConfirmOk').textContent=t('removeFile');$('#appConfirmClose').setAttribute('aria-label',t('close'));}
       }
-      async function removeFile(id){const fs=state.files.find(f=>f.id===id);if(!fs||state.removing)return;state.removing=fs;const generation=fs.fileGeneration;try{const answer=window.AppConfirm.ask({title:t('removeTitle',{name:fs.file.name}),message:t('removeMessage'),cancelLabel:BrowserKittyUI.text('cancel',state.language),confirmLabel:t('removeFile'),tone:'danger'});renderConventions();if(await answer&&isCurrentFile(fs,generation))closeFile(id);}finally{state.removing=null;}}
+      async function removeFile(id){const fs=state.files.find(f=>f.id===id);if(!fs||state.removing)return;state.removing=fs;const generation=fs.fileGeneration,opener=document.activeElement;try{const answer=window.AppConfirm.ask({title:t('removeTitle',{name:fs.file.name}),message:t('removeMessage'),cancelLabel:BrowserKittyUI.text('cancel',state.language),confirmLabel:t('removeFile'),tone:'danger'});renderConventions();if(await answer&&isCurrentFile(fs,generation)){const ownsFocus=document.activeElement===opener||document.activeElement===document.body;closeFile(id);if(ownsFocus)$(state.files.length?'#addFilesButton':'#chooseButton').focus({preventScroll:true});}}finally{state.removing=null;}}
       function t(key,vars={}){let s=(I18N[state.language]&&I18N[state.language][key])||I18N.en[key]||key;for(const [k,v] of Object.entries(vars))s=s.replaceAll(`{${k}}`,String(v));return s;}
       function formatNumber(n){return new Intl.NumberFormat(state.language==='ja'?'ja-JP':'en-US').format(Number(n)||0);}
       function formatBytes(n){const v=Number(n)||0;if(v<1024)return `${v} B`;const u=['KB','MB','GB','TB'];let x=v/1024,i=0;while(x>=1024&&i<u.length-1){x/=1024;i++;}return `${x>=10?x.toFixed(1):x.toFixed(2)} ${u[i]}`;}
