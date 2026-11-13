@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## v1.0.3 - 2026-11-13
+
+- Preserve independent values for duplicate root and Struct field names and disambiguate repeated Table/Record/CSV labels.
+- Apply IPC Stream dictionary replacements/deltas at their record-batch positions, including backward navigation.
+- Read Map entries by key/value child position and preserve duplicate map keys.
+- Correct negative-scale Decimal display and preserve Timestamp microsecond/nanosecond digits, including before the Unix epoch.
+- Add focused regression tests for all five data correctness issues.
+
 - Move only the lower informational footer version to the end of Help. Preserve the existing 620px phone hiding for that version, the header version, and the footer name and local-processing wording. No parser, data, export, dependency, or version changes.
 
 ## v1.0.2 - 2026-10-10
