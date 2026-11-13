@@ -261,6 +261,10 @@ try {
   $env:ARROW_TEST_HTML = $previousArrowTarget
 }
 
+# Check that the phone privacy badge and post-merge release automation retain their contracts.
+& $node.Source --test (Join-Path $Root "tests/release-workflow.test.cjs")
+if ($LASTEXITCODE -ne 0) { throw "Arrow release automation / responsive regressions failed." }
+
 Write-Host "[OK] Repository check passed." -ForegroundColor Green
 
 # Header translation and version checks across canonical release variants.
