@@ -493,6 +493,7 @@ test('same-name columns and nested Struct children retain independent values in 
   assert.equal(headerButton(h).textContent, 'id [1]');
   assert.equal(headerButton(h, 2).textContent, 'id [2]');
   headerButton(h, 2).listeners.click();
+  assert.equal(h.get('#sortSummary').textContent, 'Current page: id [2] · ascending');
   assert.equal(h.api.buildCurrentCsv(f.state), '__record,id [1],id [2]\r\n1,111,222');
   const struct = { name: 'nested', type: { id: 13, name: 'struct' }, children: [field(), field()] };
   const nestedBatch = { length: 1, nodes: [{ length: 1 }, { length: 1 }, { length: 1 }],
