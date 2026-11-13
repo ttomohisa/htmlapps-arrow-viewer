@@ -4,6 +4,10 @@
 
 ## v1.0.3 - 2026-11-13
 
+- Hide the local-processing badge on phones (620px and below); retain the desktop badge and privacy wording in Help.
+- Add a post-merge `main` workflow to build, validate, create an annotated `v1.0.3` tag and publish a GitHub Release with two standalone HTML downloads. Skip already-published versions and never move existing tags.
+- Test the phone badge and release workflow configuration during PR checks.
+
 - Preserve independent values for duplicate root and Struct field names and disambiguate repeated Table/Record/CSV labels.
 - Apply IPC Stream dictionary replacements/deltas at their record-batch positions, including backward navigation.
 - Read Map entries by key/value child position and preserve duplicate map keys.
