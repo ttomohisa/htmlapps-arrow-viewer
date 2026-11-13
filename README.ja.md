@@ -63,6 +63,12 @@ Python、Node.js、ローカルWebサーバーは不要です。Windows PowerShe
 5. Table / Recordを切り替え、ネスト値はCell Inspectorで確認します。Tableの列見出しで並べ替えを切り替え、どちらの表示でも「並べ替えを解除」で元の順序へ戻せます。ページや1ページの行数を変更すると並べ替えは解除されます。
 6. 現在ページの読み込み完了後にCSVをコピーまたは保存します。読み込み中や失敗時は出力できません。正常に読み込んだ0行のページはヘッダーを出力します。
 
+## マージ後のタグ・GitHub Release自動作成
+
+新しいバージョンを記載した `app.config.json` を含むPRを `main` にマージすると、`.github/workflows/release.yml` が単一HTMLをビルド・検証し、`vMAJOR.MINOR.PATCH` 形式の注釈付きタグとGitHub Releaseを作成します。可読版と自己展開版のHTMLを添付します。公開済みバージョンは重複作成せず、別のコミットを指す既存タグは移動しません。タグ作成後に失敗した場合は、原因を修正して `main` でワークフローを再実行できます。
+
+このワークフローはGitHub Actionsの `contents: write` 権限を使います。GitHub Pagesのデプロイは別のワークフローです。スマホ表示（幅620px以下）ではヒーローの「完全ローカル処理」バッジを非表示にしますが、ヘルプのプライバシー説明は残します。
+
 ## GitHub Pagesで公開する
 
 このリポジトリには、単一HTMLをビルドして `dist/` をGitHub Pagesへ自動公開するワークフローが含まれています。
