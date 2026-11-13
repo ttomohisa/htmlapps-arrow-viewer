@@ -35,7 +35,7 @@ function harness() {
   vm.createContext(context);
   const begin = html.indexOf('      const $=s=>'), end = html.indexOf('    })();', begin);
   assert.ok(begin > 0 && end > begin, 'application closure exists');
-  vm.runInContext(html.slice(begin, end) + '\n globalThis.api={state,sortedRows,buildFileState,readPage,buildCurrentCsv,copyCsv,downloadCsv,prettyValue,cellText,decodeBatchColumns,renderData,renderActive,rootFields,closeFile,activateFile,inspectFile,openCell,setHeaderDetector(fn){detectContainer=fn;}};', context);
+  vm.runInContext(html.slice(begin, end) + '\n globalThis.api={state,sortedRows,buildFileState,readPage,buildCurrentCsv,copyCsv,downloadCsv,prettyValue,cellText,decodeBatchColumns,renderData,renderActive,rootFields,closeFile,activateFile,inspectFile,openCell,readFrame,setMessageParser(fn){parseMessage=fn;},setHeaderDetector(fn){detectContainer=fn;}};', context);
   const api = context.api;
   const get = s => document.querySelector(s);
   function mount(fileState) { api.state.files.push(fileState); api.state.activeId = fileState.id; api.renderActive(); return fileState; }
@@ -640,4 +640,16 @@ test('invalid string and list offsets fail instead of displaying another byte sl
   const badList = new Uint8Array(12), lv = new DataView(badList.buffer);
   lv.setInt32(0, 0, true); lv.setInt32(4, 4, true); lv.setInt32(8, 1, true);
   assert.throws(() => h.api.decodeBatchColumns([listField], listBatch, badList, new Map()), /Arrow list\/map offsets are invalid/);
+});
+
+
+test('IPC framing rejects truncated body even if missing bytes fit inside alignment padding', async () => {
+  const h = harness();
+  // Four metadata bytes + an 8-byte declared body, but only 5 body bytes exist.
+  const fileBytes = Uint8Array.from([4, 0, 0, 0, 1, 2, 3, 4, 100, 101, 102, 103, 104]);
+  const file = { size: fileBytes.length, slice(start, end) {
+    return { arrayBuffer: async () => fileBytes.slice(start, end).buffer };
+  } };
+  h.api.setMessageParser(() => ({ bodyLength: 8 }));
+  await assert.rejects(h.api.readFrame(file, 0), /Truncated Arrow IPC message body/);
 });
