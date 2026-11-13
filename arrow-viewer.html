@@ -632,7 +632,7 @@
           seen.set(f.name,next-1);reserved.add(key);return key;
         });
       }
-      function rootFields(schema){const keys=distinctFieldKeys(schema.fields);return schema.fields.map((f,i)=>({...f,index:i,recordKey:keys[i],displayName:keys[i]}));}
+      function rootFields(schema){const keys=distinctFieldKeys(schema.fields);return schema.fields.map((f,i)=>({...f,index:i,recordKey:keys[i],...(keys[i]===f.name?{}:{displayName:keys[i]})}));}
       function bufferSlice(body,desc,compression){if(desc.offset<0||desc.length<0||desc.offset+desc.length>body.length)throw new Error('Arrow buffer points outside the record batch body');let raw=body.subarray(desc.offset,desc.offset+desc.length);if(!compression||!raw.length)return raw;if(raw.length<8)throw new Error('Truncated compressed Arrow buffer');const dv=new DataView(raw.buffer,raw.byteOffset,8),uncompressed=dv.getBigInt64(0,true);if(uncompressed===-1n)return raw.subarray(8);const codec=compression.codec===0?'LZ4_FRAME':'ZSTD';throw new Error(`Compressed Arrow IPC buffers (${codec}) are not supported yet`);}
       function decodeBatchColumns(fields,rb,body,dictionaries){const cur={node:0,buffer:0};const takeNode=()=>{const n=rb.nodes[cur.node++];if(!n)throw new Error('Arrow FieldNode metadata ended early');return n;};const takeBuffer=()=>{const d=rb.buffers[cur.buffer++];if(!d)throw new Error('Arrow Buffer metadata ended early');return bufferSlice(body,d,rb.compression);};
         function decode(field,overrideType=null,ignoreDictionary=false){if(field.dictionary&&!ignoreDictionary){const indexes=decode({...field,dictionary:null,children:[]},field.dictionary.indexType,true),dict=dictionaries.get(String(field.dictionary.id));if(!dict)throw new Error(`Dictionary ${field.dictionary.id} was not found`);return indexes.map(v=>v===null?null:(dict[Number(v)]??null));}const node=takeNode(),n=Number(node.length),type=overrideType||field.type;
@@ -690,7 +690,7 @@
         await loadDictionaries(fs,ownsRead,desc.offset??Infinity);if(!isCurrentFile(fs,generation)||!ownsRead())return [];
         const body=new Uint8Array(await fs.file.slice(desc.bodyStart,desc.bodyStart+desc.bodyLength).arrayBuffer());
         if(!isCurrentFile(fs,generation)||!ownsRead())return [];
-        const cols=decodeBatchColumns(fs.fields,desc.batch,body,fs.dictionaries),rows=new Array(desc.batch.length);
+        const cols=decodeBatchColumns(header.schema.fields,desc.batch,body,fs.dictionaries),rows=new Array(desc.batch.length);
         for(let i=0;i<rows.length;i++){const o={};for(const f of fs.fields)o[f.recordKey??f.name]=cols.get(f.recordKey??f.name)?.[i];rows[i]=o;}
         cachePut(fs,desc.index,rows);return rows;
       }
