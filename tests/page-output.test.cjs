@@ -469,3 +469,131 @@ test('Apache decimal IPC pages match independent gold coefficients in both sort 
     }
   }
 });
+
+
+// Data correctness regressions: valid Arrow schemas can repeat field names,
+// replace stream dictionaries, and use arbitrary Map entry names.
+test('same-name columns and nested Struct children retain independent values in table and CSV', async () => {
+  const h = harness(), f = h.fixture('repeated.arrow', [0]);
+  const field = () => ({ name: 'id', type: { id: 2, name: 'int', bitWidth: 32, signed: true }, children: [] });
+  f.state.header.schema.fields = [field(), field()];
+  f.state.fields = h.api.rootFields(f.state.header.schema);
+  f.state.header.batches[0].batch = {
+    length: 1, nodes: [{ length: 1 }, { length: 1 }],
+    buffers: [{ offset: 0, length: 0 }, { offset: 0, length: 4 }, { offset: 4, length: 0 }, { offset: 4, length: 4 }], compression: null
+  };
+  f.state.header.batches[0].bodyLength = 8;
+  const bytes = new Uint8Array(8), view = new DataView(bytes.buffer);
+  view.setInt32(0, 111, true); view.setInt32(4, 222, true);
+  const request = await h.start(f, 1); request.read.resolve(bytes.buffer); await request.promise;
+  assert.equal(f.state.error, '');
+  assert.equal(f.state.rows[0].value['id [1]'], 111);
+  assert.equal(f.state.rows[0].value['id [2]'], 222);
+  assert.equal(h.api.buildCurrentCsv(f.state), '__record,id [1],id [2]\r\n1,111,222');
+  assert.equal(headerButton(h).textContent, 'id [1]');
+  assert.equal(headerButton(h, 2).textContent, 'id [2]');
+  headerButton(h, 2).listeners.click();
+  assert.equal(h.api.buildCurrentCsv(f.state), '__record,id [1],id [2]\r\n1,111,222');
+  const struct = { name: 'nested', type: { id: 13, name: 'struct' }, children: [field(), field()] };
+  const nestedBatch = { length: 1, nodes: [{ length: 1 }, { length: 1 }, { length: 1 }],
+    buffers: [{ offset: 0, length: 0 }, { offset: 0, length: 0 }, { offset: 0, length: 4 }, { offset: 4, length: 0 }, { offset: 4, length: 4 }], compression: null };
+  const nested = h.api.decodeBatchColumns([struct], nestedBatch, bytes, new Map()).get('nested')[0];
+  assert.equal(nested['id [1]'], 111); assert.equal(nested['id [2]'], 222);
+});
+
+test('stream dictionary replacement applies to subsequent record batches, not earlier rows', async () => {
+  const h = harness(), f = h.fixture('replacements.arrows', [0, 0]);
+  const field = { name: 'value', type: { id: 5, name: 'utf8' }, children: [],
+    dictionary: { id: 1, indexType: { id: 2, name: 'int', bitWidth: 8, signed: false } } };
+  const dictBatch = { length: 1, nodes: [{ length: 1 }],
+    buffers: [{ offset: 0, length: 0 }, { offset: 0, length: 8 }, { offset: 8, length: 1 }], compression: null };
+  const rowBatch = { length: 1, nodes: [{ length: 1 }],
+    buffers: [{ offset: 0, length: 0 }, { offset: 0, length: 1 }], compression: null };
+  function dictBody(value) {
+    const b = new Uint8Array(9), dv = new DataView(b.buffer);
+    dv.setInt32(0, 0, true); dv.setInt32(4, 1, true); b[8] = value.charCodeAt(0);
+    return b;
+  }
+  const chunks = new Map([[8, dictBody('A')], [32, dictBody('B')], [100, Uint8Array.of(0)], [200, Uint8Array.of(0)]]);
+  f.state.file = { name: 'replacements.arrows', size: 300, lastModified: 0, slice(start) {
+    const bytes = chunks.get(start);
+    assert.ok(bytes, 'unexpected file read at ' + start);
+    return { arrayBuffer: async () => bytes.buffer };
+  } };
+  f.state.header.schema.fields = [field]; f.state.fields = h.api.rootFields(f.state.header.schema);
+  f.state.header.dictionaries = [
+    { id: 1, offset: 0, bodyStart: 8, bodyLength: 9, isDelta: false, batch: dictBatch },
+    { id: 1, offset: 24, bodyStart: 32, bodyLength: 9, isDelta: false, batch: dictBatch }
+  ];
+  f.state.header.batches = [
+    { index: 0, offset: 20, bodyStart: 100, bodyLength: 1, rowStart: 0, rowEnd: 1, batch: rowBatch },
+    { index: 1, offset: 44, bodyStart: 200, bodyLength: 1, rowStart: 1, rowEnd: 2, batch: rowBatch }
+  ];
+  f.state.totalRows = 2;
+  await h.api.readPage(f.state);
+  assert.equal(f.state.error, '');
+  assert.equal(f.state.rows[0].value.value, 'A');
+  assert.equal(h.api.buildCurrentCsv(f.state), '__record,value\r\n1,A');
+  f.state.page = 2; await h.api.readPage(f.state);
+  assert.equal(f.state.error, '');
+  assert.equal(f.state.rows[0].value.value, 'B');
+  assert.equal(h.api.buildCurrentCsv(f.state), '__record,value\r\n2,B');
+  f.state.page = 1; await h.api.readPage(f.state);
+  assert.equal(f.state.rows[0].value.value, 'A', 'backward navigation must restore prior dictionary meaning');
+});
+
+test('Map entries use child positions rather than assuming key/value child names', () => {
+  const h = harness();
+  const map = { name: 'attributes', type: { id: 17, name: 'map' }, children: [
+    { name: 'entries', type: { id: 13, name: 'struct' }, children: [
+      { name: 'k', type: { id: 5, name: 'utf8' }, children: [] },
+      { name: 'v', type: { id: 2, name: 'int', bitWidth: 32, signed: true }, children: [] }
+    ] }
+  ] };
+  const data = new Uint8Array(21), dv = new DataView(data.buffer);
+  dv.setInt32(0, 0, true); dv.setInt32(4, 1, true);
+  dv.setInt32(8, 0, true); dv.setInt32(12, 1, true);
+  data[16] = 88; dv.setInt32(17, 7, true);
+  const batch = { length: 1, nodes: [{ length: 1 }, { length: 1 }, { length: 1 }, { length: 1 }],
+    buffers: [
+      { offset: 0, length: 0 }, { offset: 0, length: 8 }, { offset: 8, length: 0 },
+      { offset: 8, length: 0 }, { offset: 8, length: 8 }, { offset: 16, length: 1 },
+      { offset: 17, length: 0 }, { offset: 17, length: 4 }
+    ], compression: null };
+  const value = h.api.decodeBatchColumns([map], batch, data, new Map()).get('attributes')[0];
+  assert.equal(value.X, 7);
+});
+
+test('negative decimal scales multiply coefficients without altering exact CSV values', () => {
+  const h = harness(), field = { name: 'amount', type: { id: 7, name: 'decimal', bitWidth: 128, precision: 10, scale: -2 }, children: [] };
+  const body = new Uint8Array(48);
+  for (const [i, coefficient] of [123n, -123n, 0n].entries()) {
+    let value = BigInt.asUintN(128, coefficient);
+    for (let j = 0; j < 16; j++) { body[i * 16 + j] = Number(value & 255n); value >>= 8n; }
+  }
+  const batch = { length: 3, nodes: [{ length: 3, nullCount: 0 }],
+    buffers: [{ offset: 0, length: 0 }, { offset: 0, length: 48 }], compression: null };
+  const decoded = Array.from(h.api.decodeBatchColumns([field], batch, body, new Map()).get('amount'));
+  assert.deepEqual(decoded, ['12300', '-12300', '0']);
+  const f = loadedValues(h, decoded); f.state.fields[0].type = field.type;
+  f.state.sort = { field: f.state.fields[0], dir: 1 };
+  assert.deepEqual(Array.from(h.api.sortedRows(f.state), x => x.recordNumber), [2, 3, 1]);
+});
+
+test('microsecond and nanosecond timestamps retain fractions including negative epochs in CSV', () => {
+  const h = harness();
+  for (const [unit, raw, timezone, expected] of [
+    [2, 1234567n, 'UTC', '1970-01-01T00:00:01.234567Z'],
+    [3, 1234567890n, 'UTC', '1970-01-01T00:00:01.234567890Z'],
+    [3, -1n, 'UTC', '1969-12-31T23:59:59.999999999Z'],
+    [2, -1n, '', '1969-12-31T23:59:59.999999']
+  ]) {
+    const field = { name: 'value', type: { id: 10, name: 'timestamp', unit, timezone }, children: [] };
+    const body = new Uint8Array(8); new DataView(body.buffer).setBigInt64(0, raw, true);
+    const batch = { length: 1, nodes: [{ length: 1 }],
+      buffers: [{ offset: 0, length: 0 }, { offset: 0, length: 8 }], compression: null };
+    const actual = h.api.decodeBatchColumns([field], batch, body, new Map()).get('value')[0];
+    assert.equal(actual, expected);
+    const f = loadedValues(h, [actual]); assert.equal(h.api.buildCurrentCsv(f.state), '__record,value\r\n1,' + expected);
+  }
+});
