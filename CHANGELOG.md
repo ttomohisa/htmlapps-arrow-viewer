@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+## v1.0.3 - 2026-11-13
+
+- Hide the local-processing badge on phones (620px and below); retain the desktop badge and privacy wording in Help.
+- Add a post-merge `main` workflow to build, validate, create an annotated `v1.0.3` tag and publish a GitHub Release with two standalone HTML downloads. Skip already-published versions and never move existing tags.
+- Test the phone badge and release workflow configuration during PR checks.
+
+- Preserve independent values for duplicate root and Struct field names and disambiguate repeated Table/Record/CSV labels.
+- Apply IPC Stream dictionary replacements/deltas at their record-batch positions, including backward navigation.
+- Read Map entries by key/value child position and preserve duplicate map keys.
+- Correct negative-scale Decimal display and preserve Timestamp microsecond/nanosecond digits, including before the Unix epoch.
+- Add focused regression tests for all five data correctness issues.
+- Guard columns named `__proto__` against being lost in top-level and Struct rows; reject corrupt List / Map and string / binary offsets instead of silently showing misleading values.
+- Reject truncated IPC message bodies even when the missing bytes are within the alignment-padding allowance.
+
 - Move only the lower informational footer version to the end of Help. Preserve the existing 620px phone hiding for that version, the header version, and the footer name and local-processing wording. No parser, data, export, dependency, or version changes.
 
 ## v1.0.2 - 2026-10-10

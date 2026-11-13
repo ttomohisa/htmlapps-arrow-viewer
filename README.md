@@ -26,10 +26,11 @@ GitHub Pages delivers the initial HTML. After it loads, selected files are read 
 - **Inspect schema and metadata** — Review schema as Tree / Raw JSON, file metadata, metadata version, endianness, and footer/header information.
 - **Review record batches and dictionaries** — Inspect batch row counts, offsets, metadata/body sizes, and dictionary information.
 - **Read only batches needed for the current page** — Avoid expanding the entire file into a table at once.
-- **Handle common Arrow values** — Decode primitive values, timestamps, List / Struct nested values, and dictionary-encoded fields covered by the viewer.
+- **Handle common Arrow values** — Decode primitive values, timestamps (including microsecond/nanosecond fractions), List / Struct / Map nested values, and dictionary-encoded fields covered by the viewer.
 - **Inspect and export current-page data** — Use Table / Record views, column visibility, sorting, Cell Inspector, and CSV copy/save.
 - **Control current-page sorting** — Use keyboard-accessible column headers to cycle ascending, descending, and source order. See the current sort and clear it from Table or Record view, even with the sorted column hidden.
 - **Keep each file isolated** — Open multiple files without letting one file’s error or schema leak into another tab.
+- **Keep Arrow values distinct** — Disambiguate repeated field names and use the dictionary version effective at each record batch. Preserve negative-scale decimals without rounding.
 
 ## Quick start
 
@@ -61,6 +62,12 @@ Python, Node.js, and a local web server are not required. The builder uses Windo
 4. Browse records with paging controls. Only record batches needed for the current page are read.
 5. Switch between Table and Record views and inspect full nested values in Cell Inspector. Activate a Table column header to cycle its sort; use Clear sort in either view to restore source order. Page or page-size changes reset sorting.
 6. Wait for the current page to finish loading, then copy or save CSV. Export is unavailable during reads and after a read failure. A successfully loaded empty page exports headers.
+
+## Automatic GitHub Releases
+
+After a PR with a new `app.config.json` version is merged into `main`, `.github/workflows/release.yml` verifies the standalone build, creates an annotated `vMAJOR.MINOR.PATCH` tag, and publishes a GitHub Release with the readable and self-extracting HTML files attached. Published versions are not recreated; a tag pointing to another commit is never moved. If the workflow fails after the tag was created, re-run it on `main` after fixing the cause.
+
+GitHub Actions requires `contents: write` for this workflow. GitHub Pages deployment remains a separate workflow. The phone layout (620px or narrower) hides the hero local-processing badge; the privacy details remain available in Help.
 
 ## Publish with GitHub Pages
 
@@ -121,16 +128,16 @@ Decimal columns sort by their exact numeric values without rounding; displayed a
 
 - Read-only: Arrow IPC files are not edited or rewritten.
 - Feather is not advertised as a supported input format.
-- IPC body buffers compressed with LZ4 / ZSTD are reported as unsupported in v1.0.1.
-- CSV export covers the successfully loaded current page, preserving visible columns and sorting. It does not cover the whole file.
+- IPC body buffers compressed with LZ4 / ZSTD are reported as unsupported in v1.0.3.
+- CSV export covers the successfully loaded current page, preserving visible columns and sorting. It does not cover the whole file. Repeated column names use numbered labels in the preview and CSV.
 - Sorting compares complete values, including binary bytes beyond the compact preview. Nulls stay last in either direction, and equal values keep their source order. Sorting reads no additional batches.
 - CSV, Cell Inspector/copy, and expanded records include all binary bytes as space-separated hexadecimal, including nested values. Table previews and record summaries remain abbreviated.
-- Schema copy becomes available once the file header is parsed, independently of row-read success.
+- Schema copy becomes available once the file header is parsed, independently of row-read success. It retains original Arrow field names, including duplicates.
 - This is a viewer rather than a SQL/query engine.
 
 ## Dependencies
 
-Arrow Viewer v1.0.1 does not bundle third-party runtime JavaScript libraries.
+Arrow Viewer v1.0.3 does not bundle third-party runtime JavaScript libraries.
 
 See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for format/project notices.
 

@@ -4,7 +4,30 @@
 
 - Move only the lower informational footer version to the end of Help. Preserve the existing 620px phone hiding for that version, the header version, and the footer name and local-processing wording. No parser, data, export, dependency, or version changes.
 
-Version: v1.0.2
+Version: v1.0.3
+
+## v1.0.3 interface and release automation
+
+- Hide the local-processing badge in phone layout (up to 620 CSS px). Keep the privacy explanation in Help and the desktop badge unchanged.
+- Merging a PR to `main` triggers the GitHub Release workflow. It validates standalone HTML, creates the `v<app.config.json version>` annotated tag when absent, and publishes a GitHub Release with both readable and self-extracting HTML assets.
+- If a published Release for the same version exists, skip without replacing it. If that tag exists at a different commit with no Release, stop instead of moving the tag. A failed publishing attempt can be retried via workflow dispatch on `main`.
+
+## v1.0.3 additional correctness hardening
+
+- Preserve Arrow columns named `__proto__` as own data properties in top-level records and nested Structs, without modifying object prototypes.
+- Treat invalid List / Map and binary / string offsets as read errors instead of silently truncating or reading the wrong bytes.
+- Reject IPC frames when the declared body extends past the physical file end, even if the missing bytes would fit into 8-byte alignment padding.
+- In sort status and accessible UI labels, use disambiguated visible column names for repeated fields.
+- Regression tests cover these cases across editable source and generated HTML variants.
+
+## v1.0.3 data-correctness fixes
+
+- Distinguish duplicate top-level and nested Struct field names by position; label repeated names with a stable numeric suffix in Table, Record and CSV, without altering the source schema.
+- Resolve IPC Stream dictionary replacements and deltas as of each record-batch offset, including backward page navigation and cached batches.
+- Decode Map entry keys and values by their child positions, regardless of the names chosen in the schema. Preserve duplicate Map keys as pairs instead of silently dropping them.
+- Display negative-scale Decimal values using their actual coefficient and scale, retaining exact sorting and CSV text.
+- Keep microsecond and nanosecond Timestamp fractions (including times before 1970) in display and CSV.
+- Add regression tests for these cases to the source, readable HTML, root download and self-extract suites. No external dependencies or runtime network requests are introduced.
 
 ## Purpose
 

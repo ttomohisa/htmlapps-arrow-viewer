@@ -20,6 +20,7 @@ on:
       - "scripts/build-self-extract.ps1"
       - "scripts/verify-self-extract.ps1"
       - ".github/workflows/build-standalone.yml"
+      - ".github/workflows/release.yml"
 
 permissions:
   contents: read
