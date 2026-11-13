@@ -597,3 +597,46 @@ test('microsecond and nanosecond timestamps retain fractions including negative 
     const f = loadedValues(h, [actual]); assert.equal(h.api.buildCurrentCsv(f.state), '__record,value\r\n1,' + expected);
   }
 });
+
+
+test('schema field named __proto__ survives row mapping, CSV, and nested Struct decoding', async () => {
+  const h = harness(), f = h.fixture('special-names.arrow', [73]);
+  const field = { name: '__proto__', type: { id: 2, name: 'int', bitWidth: 32, signed: true }, children: [] };
+  f.state.header.schema.fields = [field];
+  f.state.fields = h.api.rootFields(f.state.header.schema);
+  const page = await h.start(f, 1);
+  page.read.resolve(intBody(73));
+  await page.promise;
+  const row = f.state.rows[0].value;
+  assert.equal(Object.hasOwn(row, '__proto__'), true, 'reserved property name must be an own field');
+  assert.equal(row.__proto__, 73);
+  assert.equal(h.api.buildCurrentCsv(f.state), '__record,__proto__\r\n1,73');
+
+  const struct = { name: 'outer', type: { id: 13, name: 'struct' }, children: [field] };
+  const batch = { length: 1, nodes: [{ length: 1 }, { length: 1 }],
+    buffers: [{ offset: 0, length: 0 }, { offset: 0, length: 0 }, { offset: 0, length: 4 }], compression: null };
+  const nested = h.api.decodeBatchColumns([struct], batch, new Uint8Array(intBody(73)), new Map()).get('outer')[0];
+  assert.equal(Object.hasOwn(nested, '__proto__'), true);
+  assert.equal(nested.__proto__, 73);
+  assert.deepEqual(JSON.parse(h.api.prettyValue(nested)), JSON.parse('{"__proto__":73}'));
+});
+
+test('invalid string and list offsets fail instead of displaying another byte slice', () => {
+  const h = harness();
+  const textField = { name: 'text', type: { id: 5, name: 'utf8' }, children: [] };
+  const textBatch = { length: 1, nodes: [{ length: 1 }], compression: null,
+    buffers: [{ offset: 0, length: 0 }, { offset: 0, length: 8 }, { offset: 8, length: 5 }] };
+  const badText = new Uint8Array(13), dv = new DataView(badText.buffer);
+  dv.setInt32(0, -5, true); dv.setInt32(4, 10, true);
+  badText.set([65, 66, 67, 68, 69], 8);
+  assert.throws(() => h.api.decodeBatchColumns([textField], textBatch, badText, new Map()), /Arrow string\/binary offsets are invalid/);
+
+  const listField = { name: 'list', type: { id: 12, name: 'list' }, children: [
+    { name: 'item', type: { id: 2, name: 'int', signed: true, bitWidth: 32 }, children: [] }
+  ] };
+  const listBatch = { length: 1, nodes: [{ length: 1 }, { length: 1 }], compression: null,
+    buffers: [{ offset: 0, length: 0 }, { offset: 0, length: 8 }, { offset: 8, length: 0 }, { offset: 8, length: 4 }] };
+  const badList = new Uint8Array(12), lv = new DataView(badList.buffer);
+  lv.setInt32(0, 0, true); lv.setInt32(4, 4, true); lv.setInt32(8, 1, true);
+  assert.throws(() => h.api.decodeBatchColumns([listField], listBatch, badList, new Map()), /Arrow list\/map offsets are invalid/);
+});
