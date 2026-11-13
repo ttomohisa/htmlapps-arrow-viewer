@@ -23,9 +23,17 @@ test('tag and release only on main after version checks and a successful standal
   assert.match(yaml, /if: github\.ref == 'refs\/heads\/main'/);
   assert.match(yaml, /permissions:\s*\n\s*contents: write/);
   assert.match(yaml, /concurrency:\s*\n\s*group: arrow-viewer-github-release\s*\n\s*cancel-in-progress: false/);
-  assert.match(yaml, /Get-Content -Raw -Encoding utf8 app\.config\.json/);
-  assert.match(yaml, /gh release view \$tag --json isDraft/);
-  assert.match(yaml, /if \(\$tagExists -and \$tagCommit\.Trim\(\) -ne \$head\)/);
+  assert.match(yaml, /run: \.\/scripts\/resolve-release-state\.ps1/);
+  const preflight = read('scripts/resolve-release-state.ps1');
+  assert.match(preflight, /Get-Content -Raw -Encoding utf8 app\.config\.json/);
+  assert.match(preflight, /gh release list --limit 1000 --json tagName,isDraft/);
+  assert.match(preflight, /if \(\$LASTEXITCODE -ne 0\) \{ throw 'Could not list GitHub releases\.' \}/);
+  assert.match(preflight, /if \(\$existingRelease\.isDraft\)/);
+  assert.match(preflight, /Set-ReleaseOutput 'publish' 'false'/);
+  assert.match(preflight, /git tag --list -- \$tag/);
+  assert.match(preflight, /if \(\$tagCommit\.Trim\(\) -ne \$head\.Trim\(\)\)/);
+  assert.match(preflight, /Set-ReleaseOutput 'publish' 'true'/);
+  assert.match(preflight, /if \(-not \$CheckOnly\)/);
   assert.match(yaml, /run: \.\/scripts\/check-repository\.ps1/);
   assert.match(yaml, /if: steps\.version\.outputs\.publish == 'true'/);
   assert.match(yaml, /git tag -a \$env:RELEASE_TAG/);
@@ -39,4 +47,6 @@ test('tag and release only on main after version checks and a successful standal
 test('PR CI validates changes to the release workflow', () => {
   const yaml = read('.github/workflows/build-standalone.yml');
   assert.match(yaml, /"\.github\/workflows\/release\.yml"/);
+  assert.match(yaml, /run: \.\/scripts\/resolve-release-state\.ps1 -CheckOnly/);
+  assert.match(yaml, /fetch-depth: 0/);
 });
