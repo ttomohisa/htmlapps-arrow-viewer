@@ -6,6 +6,12 @@
 
 Version: v1.0.3
 
+## v1.0.3 interface and release automation
+
+- Hide the local-processing badge in phone layout (up to 620 CSS px). Keep the privacy explanation in Help and the desktop badge unchanged.
+- Merging a PR to `main` triggers the GitHub Release workflow. It validates standalone HTML, creates the `v<app.config.json version>` annotated tag when absent, and publishes a GitHub Release with both readable and self-extracting HTML assets.
+- If a published Release for the same version exists, skip without replacing it. If that tag exists at a different commit with no Release, stop instead of moving the tag. A failed publishing attempt can be retried via workflow dispatch on `main`.
+
 ## v1.0.3 data-correctness fixes
 
 - Distinguish duplicate top-level and nested Struct field names by position; label repeated names with a stable numeric suffix in Table, Record and CSV, without altering the source schema.
