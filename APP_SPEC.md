@@ -16,6 +16,7 @@ Version: v1.0.3
 
 - Preserve Arrow columns named `__proto__` as own data properties in top-level records and nested Structs, without modifying object prototypes.
 - Treat invalid List / Map and binary / string offsets as read errors instead of silently truncating or reading the wrong bytes.
+- Reject IPC frames when the declared body extends past the physical file end, even if the missing bytes would fit into 8-byte alignment padding.
 - In sort status and accessible UI labels, use disambiguated visible column names for repeated fields.
 - Regression tests cover these cases across editable source and generated HTML variants.
 
