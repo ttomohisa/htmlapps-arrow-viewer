@@ -4,7 +4,16 @@
 
 - Move only the lower informational footer version to the end of Help. Preserve the existing 620px phone hiding for that version, the header version, and the footer name and local-processing wording. No parser, data, export, dependency, or version changes.
 
-Version: v1.0.2
+Version: v1.0.3
+
+## v1.0.3 data-correctness fixes
+
+- Distinguish duplicate top-level and nested Struct field names by position; label repeated names with a stable numeric suffix in Table, Record and CSV, without altering the source schema.
+- Resolve IPC Stream dictionary replacements and deltas as of each record-batch offset, including backward page navigation and cached batches.
+- Decode Map entry keys and values by their child positions, regardless of the names chosen in the schema. Preserve duplicate Map keys as pairs instead of silently dropping them.
+- Display negative-scale Decimal values using their actual coefficient and scale, retaining exact sorting and CSV text.
+- Keep microsecond and nanosecond Timestamp fractions (including times before 1970) in display and CSV.
+- Add regression tests for these cases to the source, readable HTML, root download and self-extract suites. No external dependencies or runtime network requests are introduced.
 
 ## Purpose
 
