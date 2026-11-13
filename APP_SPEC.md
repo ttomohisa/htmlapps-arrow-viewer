@@ -12,6 +12,13 @@ Version: v1.0.3
 - Merging a PR to `main` triggers the GitHub Release workflow. It validates standalone HTML, creates the `v<app.config.json version>` annotated tag when absent, and publishes a GitHub Release with both readable and self-extracting HTML assets.
 - If a published Release for the same version exists, skip without replacing it. If that tag exists at a different commit with no Release, stop instead of moving the tag. A failed publishing attempt can be retried via workflow dispatch on `main`.
 
+## v1.0.3 additional correctness hardening
+
+- Preserve Arrow columns named `__proto__` as own data properties in top-level records and nested Structs, without modifying object prototypes.
+- Treat invalid List / Map and binary / string offsets as read errors instead of silently truncating or reading the wrong bytes.
+- In sort status and accessible UI labels, use disambiguated visible column names for repeated fields.
+- Regression tests cover these cases across editable source and generated HTML variants.
+
 ## v1.0.3 data-correctness fixes
 
 - Distinguish duplicate top-level and nested Struct field names by position; label repeated names with a stable numeric suffix in Table, Record and CSV, without altering the source schema.
