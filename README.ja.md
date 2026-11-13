@@ -26,10 +26,11 @@ GitHub Pagesから最初のHTMLを読み込んだ後、選択したファイル�
 - **SchemaとMetadataを確認** — Schema Tree / Raw JSON、ファイルMetadata、Metadata Version、Endianness、Footer / Header情報を確認できます。
 - **Record BatchとDictionaryを確認** — バッチ行数、オフセット、Metadata / Bodyサイズ、Dictionary情報を確認できます。
 - **現在ページに必要なBatchだけ読む** — ファイル全体を一度に表へ展開せず、現在ページに必要なRecord Batchだけ読み込みます。
-- **一般的なArrow値を確認** — Primitive、Timestamp、List / Struct、Dictionary Encodingされた値を確認できます。
+- **一般的なArrow値を確認** — Primitive、マイクロ秒・ナノ秒精度のTimestamp、List / Struct / Map、Dictionary Encodingされた値を確認できます。
 - **現在ページを確認・出力** — Table / Record、表示列、現在ページソート、Cell Inspector、CSVコピー／保存に対応します。
 - **現在ページの並べ替えを操作** — キーボード対応の列見出しで昇順・降順・元の順序を切り替えます。Table / Recordのどちらでも状態確認と解除ができ、並べ替え中の列を隠しても操作できます。
 - **ファイルごとに状態を分離** — 複数ファイルを開いても、1ファイルのエラーやSchemaが別タブへ残りません。
+- **Arrowの値を正確に確認** — 同名列は番号付きで区別し、各バッチ時点のDictionary更新を反映します。負のscaleを持つDecimalも丸めず表示します。
 
 ## すぐに使う
 
@@ -119,16 +120,16 @@ Decimal列は丸めず正確な数値順に並べ替えます。表示値とCSV�
 
 - 閲覧専用です。Arrow IPCファイルを編集・再生成する機能はありません。
 - Featherは正式対応形式として案内していません。
-- LZ4 / ZSTDで圧縮されたIPC Body Bufferはv1.0.1では未対応として扱います。
-- CSV保存は正常に読み込んだ現在ページが対象で、表示列とソート順を保持します。ファイル全体の出力には対応しません。
+- LZ4 / ZSTDで圧縮されたIPC Body Bufferはv1.0.3でも未対応として扱います。
+- CSV保存は正常に読み込んだ現在ページが対象で、表示列とソート順を保持します。ファイル全体の出力には対応しません。同名列はプレビューとCSVの列名に番号を付けて区別します。
 - 並べ替えでは、省略表示の先にあるバイナリも含めて完全な値を比較します。nullは昇順・降順とも末尾になり、同じ値は元の順序を保ちます。追加のバッチ読み込みは発生しません。
 - CSV、セルの内容／コピー、展開したレコードでは、ネスト内も含めたバイナリ値の全バイトを空白区切りの16進数で表示します。表やレコード見出しのプレビューは省略表示のままです。
-- スキーマのコピーはヘッダー解析後に利用でき、行データの読み込み成功とは独立しています。
+- スキーマのコピーはヘッダー解析後に利用でき、行データの読み込み成功とは独立しています。コピーするスキーマには同名列も元の列名で残します。
 - SQL / Query EngineではなくViewerです。
 
 ## 依存関係
 
-Arrow Viewer v1.0.1 は、実行時のサードパーティJavaScriptライブラリを同梱していません。
+Arrow Viewer v1.0.3 は、実行時のサードパーティJavaScriptライブラリを同梱していません。
 
 形式・プロジェクトに関する補足は [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) を確認してください。
 
