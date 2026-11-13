@@ -14,6 +14,7 @@
 - Correct negative-scale Decimal display and preserve Timestamp microsecond/nanosecond digits, including before the Unix epoch.
 - Add focused regression tests for all five data correctness issues.
 - Guard columns named `__proto__` against being lost in top-level and Struct rows; reject corrupt List / Map and string / binary offsets instead of silently showing misleading values.
+- Reject truncated IPC message bodies even when the missing bytes are within the alignment-padding allowance.
 
 - Move only the lower informational footer version to the end of Help. Preserve the existing 620px phone hiding for that version, the header version, and the footer name and local-processing wording. No parser, data, export, dependency, or version changes.
 
