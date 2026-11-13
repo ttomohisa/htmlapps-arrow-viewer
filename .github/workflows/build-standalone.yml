@@ -32,6 +32,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -41,6 +43,12 @@ jobs:
       - name: Build and verify standalone HTML
         shell: pwsh
         run: ./scripts/check-repository.ps1
+
+      - name: Smoke test release detection (read-only)
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./scripts/resolve-release-state.ps1 -CheckOnly
 
       - name: Upload standalone artifact
         uses: actions/upload-artifact@v7

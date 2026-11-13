@@ -36,36 +36,7 @@ jobs:
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $config = Get-Content -Raw -Encoding utf8 app.config.json | ConvertFrom-Json
-          $version = [string]$config.version
-          if ($version -notmatch '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$') {
-            throw "app.config.json has an invalid release version: $version"
-          }
-
-          $tag = "v$version"
-          "tag=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-
-          $published = gh release view $tag --json isDraft --jq .isDraft 2>$null
-          if ($LASTEXITCODE -eq 0) {
-            if ([string]$published -eq 'true') {
-              throw "A draft release exists for $tag. Review the incomplete draft before retrying."
-            }
-            Write-Host "$tag already has a published GitHub Release. Nothing to do."
-            "publish=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-            exit 0
-          }
-
-          $head = (git rev-parse HEAD).Trim()
-          $tagCommit = git rev-parse -q --verify "refs/tags/$tag^{commit}" 2>$null
-          $tagExists = $LASTEXITCODE -eq 0
-          if ($tagExists -and $tagCommit.Trim() -ne $head) {
-            throw "Tag $tag exists on $tagCommit, not $head. Bump app.config.json instead of moving an existing tag."
-          }
-          "tag_exists=$(if ($tagExists) { 'true' } else { 'false' })" |
-            Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-          "publish=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        run: ./scripts/resolve-release-state.ps1
 
       - name: Build and verify both standalone HTML variants
         if: steps.version.outputs.publish == 'true'
