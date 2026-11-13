@@ -63,6 +63,12 @@ Python, Node.js, and a local web server are not required. The builder uses Windo
 5. Switch between Table and Record views and inspect full nested values in Cell Inspector. Activate a Table column header to cycle its sort; use Clear sort in either view to restore source order. Page or page-size changes reset sorting.
 6. Wait for the current page to finish loading, then copy or save CSV. Export is unavailable during reads and after a read failure. A successfully loaded empty page exports headers.
 
+## Automatic GitHub Releases
+
+After a PR with a new `app.config.json` version is merged into `main`, `.github/workflows/release.yml` verifies the standalone build, creates an annotated `vMAJOR.MINOR.PATCH` tag, and publishes a GitHub Release with the readable and self-extracting HTML files attached. Published versions are not recreated; a tag pointing to another commit is never moved. If the workflow fails after the tag was created, re-run it on `main` after fixing the cause.
+
+GitHub Actions requires `contents: write` for this workflow. GitHub Pages deployment remains a separate workflow. The phone layout (620px or narrower) hides the hero local-processing badge; the privacy details remain available in Help.
+
 ## Publish with GitHub Pages
 
 The repository includes a workflow that builds the standalone HTML and deploys `dist/` to GitHub Pages automatically.
